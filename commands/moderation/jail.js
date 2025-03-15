@@ -1,6 +1,5 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
-const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
 const User = require("../../models/userModel.js"); // MongoDB modelini dahil ettik
 
