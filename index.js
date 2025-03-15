@@ -353,53 +353,6 @@ client.on("guildMemberRemove", async (member) => {
     );
 });
 
-// Ses istatistiklerini takip et
-const voiceStates = new Map();
-
-client.on("voiceStateUpdate", (oldState, newState) => {
-    const userId = newState.member.user.id;
-    const guildId = newState.guild.id;
-
-    // Kullanıcı ses kanalına katıldı
-    if (!oldState.channelId && newState.channelId) {
-        voiceStates.set(userId, {
-            timestamp: Date.now(),
-            channelId: newState.channelId,
-        });
-    }
-    // Kullanıcı ses kanalından ayrıldı
-    else if (oldState.channelId && !newState.channelId) {
-        const joinData = voiceStates.get(userId);
-        if (joinData) {
-            const duration = (Date.now() - joinData.timestamp) / 60000; // Dakikaya çevir
-            statistics.updateVoiceStats(
-                userId,
-                guildId,
-                joinData.channelId,
-                duration,
-            );
-            voiceStates.delete(userId);
-        }
-    }
-    // Kullanıcı kanal değiştirdi
-    else if (oldState.channelId !== newState.channelId) {
-        const joinData = voiceStates.get(userId);
-        if (joinData) {
-            const duration = (Date.now() - joinData.timestamp) / 60000;
-            statistics.updateVoiceStats(
-                userId,
-                guildId,
-                joinData.channelId,
-                duration,
-            );
-        }
-        voiceStates.set(userId, {
-            timestamp: Date.now(),
-            channelId: newState.channelId,
-        });
-    }
-});
-
 // Üye girişlerini dinle (sayaç için)
 client.on("guildMemberAdd", async (member) => {
     // Sayaç sistemine ilet
