@@ -94,28 +94,31 @@ client.once("ready", async () => {
     const readyMessage = `${client.user.tag} hazır!`;
 
     // Progress mesajı olarak etkinlik durumunu ayarla
-    client.user.setActivity(readyMessage, {
-        type: ActivityType.Playing,
+    await client.user.setActivity(readyMessage, {
+        type: ActivityType.Playing, // Discord etkinlik türünü "Playing" olarak belirle
     });
 
     // Eski izleme aktivitesini 5 saniye sonra geri yükle
-    setTimeout(() => {
-        client.user.setActivity("discord.gg/mabet", {
-            type: ActivityType.Watching,
+    setTimeout(async () => {
+        await client.user.setActivity("discord.gg/mabet", {
+            type: ActivityType.Watching, // Etkinlik türünü "Watching" olarak güncelle
         });
     }, 5000);
 
-const LOG_CHANNEL_ID = "1350464454252560454"; // Bot durum kanal ID
+    // Log kanal ID'sini belirle
+    const LOG_CHANNEL_ID = "1350464454252560454"; 
 
-    // Kanalı bul ve mesaj gönder
-    const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
-    if (logChannel) {
-        logChannel.send("> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**");
-    } else {
-        console.error("Belirtilen kanal bulunamadı!");
+    try {
+        // Kanalı bul ve mesaj gönder
+        const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
+        if (logChannel) {
+            await logChannel.send("> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**");
+        }
+    } catch (error) {
+        console.error("Kanal bulunamadı ya da mesaj gönderilemedi: ", error);
     }
-
 });
+
 
 // AntiLink sistemini dahil et
 const antiLink = require("./utils/antiLink.js");
