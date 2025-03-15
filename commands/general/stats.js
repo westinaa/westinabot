@@ -1,91 +1,68 @@
-const { EmbedBuilder } = require('discord.js');
-const statistics = require('../../utils/statistics.js');
+const { MessageEmbed } = require('discord.js');
+const UserStats = require('../models/userStats');
+const moment = require('moment');
 
 module.exports = {
-    name: 'stats',
-    description: 'Sunucu ve kullanıcı istatistiklerini gösterir',
-    async execute(message, args) {
-        // Sayısal argümanı bul
-        const numberArg = args.find(arg => !isNaN(arg) && !arg.includes('@'));
-        let days = null;
-        if (numberArg) {
-            days = parseInt(numberArg);
-            if (days < 1 || days > 365) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setDescription('❌ Lütfen 1 ile 365 arasında geçerli bir gün sayısı belirtin! (Örnek: !stats 15)')
-                    .setFooter({ text: message.guild.name });
-                return message.reply({ embeds: [errorEmbed] });
-            }
-        }
+  name: 'stats',
+  description: 'Bir kullanıcının mesaj ve sesli kanal istatistiklerini gösterir.',
+  async execute(message, args) {
+    if (!args[0]) return message.reply('Lütfen istatistiklerini görmek istediğiniz kullanıcıyı belirtin.');
+    
+    const user = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+    if (!user) return message.reply('Geçerli bir kullanıcı bulunamadı.');
 
-        // Eğer bir kullanıcı etiketlendiyse, direkt kullanıcı istatistiklerini göster
-        const mentionedUser = message.mentions.users.first();
-        if (mentionedUser) {
-            const userStats = statistics.getUserStats(mentionedUser.id, message.guild.id, days);
-            const embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle(`📊 Kullanıcı İstatistikleri: ${mentionedUser.tag} ${days ? `(Son ${days} gün)` : ''}`)
-                .addFields(
-                    { name: '💬 Toplam Mesaj', value: userStats.messages.toString(), inline: true },
-                    { name: '🎤 Ses Kanalı Süresi', value: `${Math.round(userStats.voiceMinutes / 60)} saat`, inline: true },
-                    { name: '⏱️ Son Aktivite', value: userStats.lastActive ? `<t:${Math.floor(userStats.lastActive / 1000)}:R>` : 'Veri yok', inline: true }
-                )
-                .setTimestamp()
-                .setFooter({ text: `${message.guild.name} | Periyot: ${days ? `${days} gün` : 'Tüm zamanlar'}` });
+    let timePeriod = args[1] ? args[1].toLowerCase() : null;
+    let timeLimit = null;
 
-            return message.channel.send({ embeds: [embed] });
-        }
+    // Zaman dilimi kontrolü
+    if (timePeriod) {
+      const days = parseInt(timePeriod);
+      if (days && days > 0) {
+        timeLimit = moment().subtract(days, 'days').toDate();
+      } else {
+        return message.reply('Geçersiz zaman dilimi girdiniz. Lütfen geçerli bir zaman dilimi belirtin (örnek: 1g, 7g, 10g).');
+      }
+    }
 
-        const subCommand = args[0]?.toLowerCase();
+    // Kullanıcı verilerini MongoDB'den al
+    const userStats = await UserStats.findOne({ userId: user.id });
 
-        if (subCommand === 'sunucu' || !subCommand) {
-            // Sunucu istatistikleri
-            const serverStats = statistics.getServerStats(message.guild, days);
-            const embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle(`📊 Sunucu İstatistikleri ${days ? `(Son ${days} gün)` : ''}`)
-                .addFields(
-                    { name: '👥 Toplam Üye', value: serverStats.totalMembers.toString(), inline: true },
-                    { name: '🟢 Çevrimiçi Üye', value: serverStats.onlineMembers.toString(), inline: true },
-                    { name: '📈 Aktif Üye', value: serverStats.activeUsers24h.toString(), inline: true },
-                    { name: '🎭 Rol Sayısı', value: serverStats.roles.toString(), inline: true },
-                    { name: '📝 Metin Kanalları', value: serverStats.channels.text.toString(), inline: true },
-                    { name: '🔊 Ses Kanalları', value: serverStats.channels.voice.toString(), inline: true }
-                )
-                .setTimestamp()
-                .setFooter({ text: `${message.guild.name} | Periyot: ${days ? `${days} gün` : 'Son 24 saat'}` });
+    if (!userStats) {
+      return message.reply('Bu kullanıcıya ait istatistik bulunamadı.');
+    }
 
-            await message.channel.send({ embeds: [embed] });
+    let totalVoiceTime = 0;
+    let channelMessages = {};
 
-        } else if (subCommand === 'top') {
-            // En aktif kullanıcılar
-            const topUsers = statistics.getTopUsers(message.guild.id, 10, days);
-            const topUsersFields = await Promise.all(topUsers.map(async (user, index) => {
-                const member = await message.guild.members.fetch(user.userId).catch(() => null);
-                if (!member) return null;
-                return {
-                    name: `${index + 1}. ${member.user.tag}`,
-                    value: `Mesajlar: ${user.messages} | Ses: ${Math.round(user.voiceMinutes / 60)} saat`,
-                    inline: false
-                };
-            }));
+    // Sesli kanal verisini ve mesaj sayılarını hesapla
+    userStats.voiceStats.forEach(voiceStat => {
+      if (!timeLimit || voiceStat.joinTime >= timeLimit) {
+        totalVoiceTime += voiceStat.totalTime;  // Toplam sesli kanal süresi
+      }
+    });
 
-            const embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle(`🏆 En Aktif Kullanıcılar ${days ? `(Son ${days} gün)` : ''}`)
-                .addFields(topUsersFields.filter(field => field !== null))
-                .setTimestamp()
-                .setFooter({ text: `${message.guild.name} | Periyot: ${days ? `${days} gün` : 'Tüm zamanlar'}` });
+    // Mesaj sayılarını filtrele
+    userStats.messages.forEach((count, channelId) => {
+      if (!timeLimit || new Date(channelId) >= timeLimit) {
+        channelMessages[channelId] = count;  // Her kanal için mesaj sayısı
+      }
+    });
 
-            await message.channel.send({ embeds: [embed] });
-        } else {
-            const embed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setDescription('❌ Geçersiz komut! Kullanım:\n!stats [5] - Sunucu istatistikleri\n!stats @kullanıcı [7] - Kullanıcı istatistikleri\n!stats top [10] - En aktif kullanıcılar\n!stats sunucu [30] - Detaylı sunucu istatistikleri\n\nNot: Gün sayısını 1-365 arasında belirtebilirsiniz.')
-                .setFooter({ text: message.guild.name });
+    // Sonuçları yanıt olarak gönder
+    const formattedVoiceTime = moment.duration(totalVoiceTime).humanize();  // Sesli kanal süresi formatlama
+    const messageStats = Object.entries(channelMessages)
+      .map(([channelId, count]) => `<#${channelId}>: ${count} mesaj`)
+      .join('\n');
 
-            await message.channel.send({ embeds: [embed] });
-        }
-    },
+    let reply = new MessageEmbed()
+      .setTitle(`${user.tag} İstatistikleri`)
+      .setDescription(timePeriod ? `Zaman dilimi: son ${timePeriod}.` : 'Tüm zamanlar:')
+      .addFields(
+        { name: 'Sesli Kanal Süresi', value: formattedVoiceTime, inline: true },
+        { name: 'Mesaj Sayıları', value: messageStats || 'Hiç mesaj gönderilmedi.', inline: false }
+      )
+      .setColor('#3498db');
+
+    message.reply({ embeds: [reply] });
+  },
 };
