@@ -63,6 +63,7 @@ module.exports = {
                 .setDescription("<a:westina_red:1349419144243576974> Kullanıcı yasaklaması kaldırılırken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
+            console.error("Unban işlemi hatası:", error);
         }
     },
 };
