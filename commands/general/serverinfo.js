@@ -48,7 +48,7 @@ module.exports = {
             .setAuthor({ name: guild.name, iconURL: guild.iconURL({ dynamic: true }) }) // Sunucu adı ve resmi
             .setDescription(
                 `<t:${timestamp}:R> **Tarihli Sunucu Verisi**\n\n` + // Zaman gösterimi
-                `\` ❯ \` <:voice:1349504902703091743> Şu anda toplam ${numberToEmoji(voiceMembers.size)}\n kişi seslide.` +
+                `\` ❯ \` <:voice:1349504902703091743> Şu anda toplam ${numberToEmoji(voiceMembers.size)}\n kişi seslide.\n` +
                 `\` ❯ \` <:uye:1349504908050698333> Sunucuda toplam ${numberToEmoji(guild.memberCount)} üye var\n` +
                 `\` ❯ \` <:online:1349504905374863484> Anlık çevrimiçi üye sayısı: ${numberToEmoji(onlineMembers)}\n` +
                 `\` ❯ \` <a:aku_boost:1349419063029534722> Sunucuya toplam ${numberToEmoji(guild.premiumSubscriptionCount || 0)} boost basılmış.`
