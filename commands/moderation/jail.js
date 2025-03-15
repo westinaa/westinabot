@@ -2,6 +2,8 @@ const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
+const mongoose = require("mongoose");
+const userModel = require("../../models/userModel"); // MongoDB şeması
 
 module.exports = {
     name: "jail",
@@ -10,7 +12,7 @@ module.exports = {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Bu komutu kullanma yetkiniz yok!")
+                .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -19,7 +21,7 @@ module.exports = {
         if (!user) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Hapse atılacak kullanıcıyı etiketlemelisiniz!")
+                .setDescription("<a:westina_red:1349419144243576974> Hapse atılacak kullanıcıyı etiketlemelisiniz!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -28,7 +30,7 @@ module.exports = {
         if (!duration || isNaN(duration) || duration < 1) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Geçerli bir süre belirtmelisiniz! (saat cinsinden)")
+                .setDescription("<a:westina_red:1349419144243576974> Geçerli bir süre belirtmelisiniz! (saat cinsinden)")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -36,7 +38,7 @@ module.exports = {
         const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
         // Jail rolünü kontrol et veya oluştur
-        let jailRole = message.guild.roles.cache.find(role => role.name === "Jailed");
+        let jailRole = message.guild.roles.cache.find(role => role.name === "cezalı");
         if (!jailRole) {
             try {
                 jailRole = await message.guild.roles.create({
@@ -57,7 +59,7 @@ module.exports = {
             } catch (error) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor("#ff0000")
-                    .setDescription("❌ Jail rolü oluşturulurken bir hata oluştu!")
+                    .setDescription("<a:westina_red:1349419144243576974> Jail rolü oluşturulurken bir hata oluştu!")
                     .setFooter({ text: "made by westina <3" });
                 return message.reply({ embeds: [errorEmbed] });
             }
@@ -70,6 +72,19 @@ module.exports = {
             // Tüm rolleri kaldır ve jail rolünü ver
             await user.roles.remove(userRoles);
             await user.roles.add(jailRole);
+
+            // MongoDB'ye kullanıcıyı kaydet
+            const jailEndTime = Date.now() + duration * 3600000; // Şu anki zaman + süre
+
+            const jailData = new userModel({
+                userId: user.id,
+                guildId: message.guild.id,
+                jailEndTime: jailEndTime,
+                reason: reason,
+                moderatorId: message.author.id,
+            });
+
+            await jailData.save();
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#1e1e1e")
@@ -89,7 +104,9 @@ module.exports = {
             // Süre sonunda jail'den çıkar
             setTimeout(async () => {
                 try {
-                    if (user.roles.cache.has(jailRole.id)) {
+                    // MongoDB'den kullanıcıyı bul ve jail durumunu kaldır
+                    const jailRecord = await userModel.findOne({ userId: user.id, guildId: message.guild.id });
+                    if (jailRecord) {
                         await user.roles.remove(jailRole);
                         await user.roles.add(userRoles);
 
@@ -102,11 +119,14 @@ module.exports = {
 
                         message.channel.send({ embeds: [releaseEmbed] });
                         logger.log(message.guild, "UNJAIL", message.client.user, user.user, "Süre doldu");
+
+                        // MongoDB kaydını sil
+                        await userModel.deleteOne({ userId: user.id, guildId: message.guild.id });
                     }
                 } catch (error) {
                     const errorEmbed = new EmbedBuilder()
                         .setColor("#ff0000")
-                        .setDescription("❌ Kullanıcı hapisten çıkarılırken bir hata oluştu!")
+                        .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapisten çıkarılırken bir hata oluştu!")
                         .setFooter({ text: message.guild.name });
                     message.channel.send({ embeds: [errorEmbed] });
                 }
@@ -115,7 +135,7 @@ module.exports = {
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Kullanıcı hapse atılırken bir hata oluştu!")
+                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapse atılırken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
         }
