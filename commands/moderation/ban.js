@@ -10,7 +10,7 @@ module.exports = {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Bu komutu kullanma yetkiniz yok!")
+                .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -23,7 +23,7 @@ module.exports = {
                 const errorEmbed = new EmbedBuilder()
                     .setColor("#ff0000")
                     .setTitle("Eksik argüman!")
-                    .setDescription("❌ Yasaklanacak kullanıcıyı etiketlemelisiniz ya da ID girmelisiniz!")
+                    .setDescription("<a:westina_red:1349419144243576974> Yasaklanacak kullanıcıyı etiketlemelisiniz ya da ID girmelisiniz!")
                     .setFooter({ text: "made by westina <3" });
                 return message.reply({ embeds: [errorEmbed] });
             }
@@ -32,7 +32,7 @@ module.exports = {
                 const errorEmbed = new EmbedBuilder()
                     .setColor("#ff0000")
                     .setTitle("Geçersiz kullanıcı!")
-                    .setDescription("❌ Bu ID ile bir kullanıcı bulunamadı!")
+                    .setDescription("<a:westina_red:1349419144243576974> Bu ID ile bir kullanıcı bulunamadı!")
                     .setFooter({ text: "made by westina <3" });
                 return message.reply({ embeds: [errorEmbed] });
             }
@@ -56,7 +56,7 @@ module.exports = {
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#00ff00")
-                .setTitle("🔨 Kullanıcı Yasaklandı")
+                .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Yasaklandı")
                 .setDescription(
                     `**${user.tag}** kullanıcısı başarıyla yasaklandı.`
                 )
@@ -76,7 +76,7 @@ module.exports = {
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Kullanıcı yasaklanırken bir hata oluştu!")
+                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı yasaklanırken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
         }
