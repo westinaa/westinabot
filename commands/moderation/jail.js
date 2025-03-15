@@ -4,7 +4,7 @@ const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const User = require("../../models/userModel.js");
+const User = require("../../models/userModel.js"); // MongoDB modelini dahil ettik
 
 const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
 
@@ -96,7 +96,7 @@ module.exports = {
             };
 
             // MongoDB'ye kullanıcıyı kaydet
-            await new userModel(jailData).save();
+            await new User(jailData).save();
         } catch (error) {
             console.error("Kullanıcı hapse atılırken bir hata oluştu:", error);
             const errorEmbed = new EmbedBuilder()
@@ -119,7 +119,5 @@ module.exports = {
 
         message.reply({ embeds: [successEmbed] });
         logger.log(message.guild, "JAIL", message.author, user.user, reason);
-
-        // Süre olmadan sürekli hapis kaldığı için çıkarma işlemi yapılmaz
     },
 };
