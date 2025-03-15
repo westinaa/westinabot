@@ -83,8 +83,8 @@ module.exports = {
             await user.roles.remove(jailRole);
 
             // Jail kaydını veritabanından sil
-            existingUser.jails = existingUser.jails.filter(jail => jail.jailEndTime === null); // Süresiz olanlar hariç
-            await existingUser.save();
+            existingUser.jails = existingUser.jails.filter(jail => jail.jailEndTime === null);
+            await existingUser.save({ validateModifiedOnly: true }); // Yalnızca değiştirilmiş alanları kaydediyoruz
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#98ff98")
