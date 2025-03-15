@@ -2,8 +2,10 @@ const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
-const mongoose = require("mongoose");
-const userModel = require("../../models/userModel.js"); // MongoDB şeması
+const fs = require("fs");
+const path = require("path");
+
+const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
 
 module.exports = {
     name: "jail",
@@ -26,16 +28,7 @@ module.exports = {
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        const duration = parseInt(args[1]);
-        if (!duration || isNaN(duration) || duration < 1) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
-                .setDescription("<a:westina_red:1349419144243576974> Geçerli bir süre belirtmelisiniz! (saat cinsinden)")
-                .setFooter({ text: "made by westina <3" });
-            return message.reply({ embeds: [errorEmbed] });
-        }
-
-        const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
+        const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
 
         // Jail rolünü kontrol et veya oluştur
         let jailRole = message.guild.roles.cache.find(role => role.name === "cezalı");
@@ -70,6 +63,16 @@ module.exports = {
             // Kullanıcının mevcut rollerini kaydet
             const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id && r.name !== "sponsor").map(r => r.id);  // "sponsor" rolünü filtrele
 
+            // Jail roles verisini JSON dosyasına kaydet
+            let jailRolesData = {};
+            if (fs.existsSync(jailRolesPath)) {
+                jailRolesData = JSON.parse(fs.readFileSync(jailRolesPath, "utf8"));
+            }
+
+            // Kullanıcının rollerini JSON dosyasına kaydediyoruz
+            jailRolesData[user.id] = userRoles;
+            fs.writeFileSync(jailRolesPath, JSON.stringify(jailRolesData, null, 4));
+
             // "Sponsor" rolü varsa, bu rolü kaldırma
             const sponsorRole = user.roles.cache.find(r => r.name === "sponsor");
             if (sponsorRole) {
@@ -82,18 +85,17 @@ module.exports = {
                 await user.roles.add(jailRole);
             }
 
-            // MongoDB'ye kullanıcıyı kaydet
-            const jailEndTime = Date.now() + duration * 3600000; // Şu anki zaman + süre
-
-            const jailData = new userModel({
+            // Süresiz olarak hapse atıldığını MongoDB'ye kaydediyoruz
+            const jailData = {
                 userId: user.id,
                 guildId: message.guild.id,
-                jailEndTime: jailEndTime,
+                jailEndTime: null, // Süresiz olduğundan sonlanma zamanı yok
                 reason: reason,
                 moderatorId: message.author.id,
-            });
+            };
 
-            await jailData.save();
+            // MongoDB'ye kullanıcıyı kaydet
+            await new userModel(jailData).save();
         } catch (error) {
             console.error("Kullanıcı hapse atılırken bir hata oluştu:", error);
             const errorEmbed = new EmbedBuilder()
@@ -109,45 +111,14 @@ module.exports = {
             .setDescription(`**${user.user.tag}** kullanıcısı hapse atıldı.`)
             .addFields(
                 { name: "👮 Moderatör", value: message.author.tag, inline: true },
-                { name: "⏱️ Süre", value: `${duration} saat`, inline: true },
                 { name: "📝 Sebep", value: reason }
             )
             .setTimestamp()
             .setFooter({ text: "made by westina <3" });
 
         message.reply({ embeds: [successEmbed] });
-        logger.log(message.guild, "JAIL", message.author, user.user, `${duration} saat - ${reason}`);
+        logger.log(message.guild, "JAIL", message.author, user.user, reason);
 
-        // Süre sonunda jail'den çıkar
-        setTimeout(async () => {
-            try {
-                // MongoDB'den kullanıcıyı bul ve jail durumunu kaldır
-                const jailRecord = await userModel.findOne({ userId: user.id, guildId: message.guild.id });
-                if (jailRecord) {
-                    await user.roles.remove(jailRole);
-                    await user.roles.add(userRoles);  // Sponsor rolü olmadığı için geri ekleme yapmıyoruz
-
-                    const releaseEmbed = new EmbedBuilder()
-                        .setColor("#00ff00")
-                        .setTitle("🔓 Kullanıcı Serbest Bırakıldı")
-                        .setDescription(`**${user.user.tag}** kullanıcısının hapis süresi doldu.`)
-                        .setTimestamp()
-                        .setFooter({ text: "made by westina <3" });
-
-                    message.channel.send({ embeds: [releaseEmbed] });
-                    logger.log(message.guild, "UNJAIL", message.client.user, user.user, "Süre doldu");
-
-                    // MongoDB kaydını sil
-                    await userModel.deleteOne({ userId: user.id, guildId: message.guild.id });
-                }
-            } catch (error) {
-                console.error("Kullanıcı hapisten çıkarılırken bir hata oluştu:", error);
-                const errorEmbed = new EmbedBuilder()
-                    .setColor("#ff0000")
-                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapisten çıkarılırken bir hata oluştu!")
-                    .setFooter({ text: message.guild.name });
-                message.channel.send({ embeds: [errorEmbed] });
-            }
-        }, duration * 3600000); // Saati milisaniyeye çevir
+        // Süre olmadan sürekli hapis kaldığı için çıkarma işlemi yapılmaz
     },
 };
