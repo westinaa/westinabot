@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const UserModel = require('../../models/userModel.js');
 
 module.exports = {
@@ -27,7 +27,7 @@ module.exports = {
     allPunishments.sort((a, b) => b.createdAt - a.createdAt);
 
     // Sayfalama ayarları
-    const perPage = 5; // Her sayfada 5 ceza gösterilecek
+    const perPage = 5;
     let page = 0;
 
     const generateEmbed = (page) => {
@@ -41,24 +41,24 @@ module.exports = {
         `🔹 **Sebep:** ${p.reason}\n`
       ).join('\n');
 
-      return new MessageEmbed()
+      return new EmbedBuilder()
         .setTitle(`${user.tag} Kullanıcı Sicili`)
         .setDescription(punishmentList || 'Bu sayfada ceza yok.')
         .setColor('#ff0000')
         .setFooter({ text: `Sayfa ${page + 1}/${Math.ceil(allPunishments.length / perPage)}` });
     };
 
-    const row = new MessageActionRow()
+    const row = new ActionRowBuilder()
       .addComponents(
-        new MessageButton()
+        new ButtonBuilder()
           .setCustomId('prev')
           .setLabel('⬅️')
-          .setStyle('PRIMARY')
+          .setStyle(ButtonStyle.Primary)
           .setDisabled(page === 0),
-        new MessageButton()
+        new ButtonBuilder()
           .setCustomId('next')
           .setLabel('➡️')
-          .setStyle('PRIMARY')
+          .setStyle(ButtonStyle.Primary)
           .setDisabled(allPunishments.length <= perPage)
       );
 
@@ -75,18 +75,17 @@ module.exports = {
         page++;
       }
 
-      // Yeni embed ve butonları güncelle
-      const newRow = new MessageActionRow()
+      const newRow = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId('prev')
             .setLabel('⬅️')
-            .setStyle('Primary')
+            .setStyle(ButtonStyle.Primary)
             .setDisabled(page === 0),
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId('next')
             .setLabel('➡️')
-            .setStyle('Primary')
+            .setStyle(ButtonStyle.Primary)
             .setDisabled(page >= Math.ceil(allPunishments.length / perPage) - 1)
         );
 
