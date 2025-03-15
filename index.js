@@ -12,6 +12,7 @@ const antiSpam = require("./utils/antiSpam.js");
 const statistics = require("./utils/statistics.js");
 const logger = require("./utils/logger.js");
 const guard = require("./utils/guard.js");
+const UserStats = require('./models/userStats.js')
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
