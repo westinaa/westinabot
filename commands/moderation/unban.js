@@ -1,36 +1,68 @@
-const { permissions } = require('../../utils/permissions.js');
-const logger = require('../../utils/logger.js');
+const { permissions } = require("../../utils/permissions.js");
+const { EmbedBuilder } = require("discord.js");
+const Ban = require("../../models/Ban");
 
 module.exports = {
-    name: 'unban',
-    description: 'Kullanıcının yasaklamasını kaldırır',
+    name: "unban",
+    description: "Yasaklı bir kullanıcıyı sunucudan yasaklamayı kaldırır",
     async execute(message, args) {
         if (!permissions.checkModerator(message.member)) {
-            return message.reply('Bu komutu kullanma yetkiniz yok!');
+            const errorEmbed = new EmbedBuilder()
+                .setColor("#ff0000")
+                .setDescription("❌ Bu komutu kullanma yetkiniz yok!")
+                .setFooter({ text: "made by westina <3" });
+            return message.reply({ embeds: [errorEmbed] });
         }
 
-        if (!args[0]) {
-            return message.reply('Yasağı kaldırılacak kullanıcının ID\'sini belirtmelisiniz!');
-        }
-
+        // Kullanıcı ID veya etiketle alınabilir
         const userId = args[0];
-        const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi';
+        if (!userId) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor("#ff0000")
+                .setTitle("Eksik argüman!")
+                .setDescription("❌ Yasaklanan kullanıcının ID'sini girmelisiniz ya da etiketlemelisiniz!")
+                .setFooter({ text: "made by westina <3" });
+            return message.reply({ embeds: [errorEmbed] });
+        }
+
+        // Eğer kullanıcı etiketlenmişse ID'sini alalım
+        let user;
+        if (message.mentions.users.size > 0) {
+            user = message.mentions.users.first();
+        } else {
+            user = await message.guild.members.fetch(userId).catch(() => null);
+        }
+
+        if (!user) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor("#ff0000")
+                .setTitle("Geçersiz kullanıcı!")
+                .setDescription("❌ Bu ID veya etiket ile bir kullanıcı bulunamadı!")
+                .setFooter({ text: "made by westina <3" });
+            return message.reply({ embeds: [errorEmbed] });
+        }
 
         try {
-            console.log(`Unban işlemi başlatıldı - Kullanıcı ID: ${userId}`);
-            const banList = await message.guild.bans.fetch();
-            const bannedUser = banList.find(ban => ban.user.id === userId);
+            // Yasaklı kullanıcıyı unban yap
+            await message.guild.members.unban(user.id);
 
-            if (!bannedUser) {
-                return message.reply('Bu ID\'ye sahip yasaklanmış bir kullanıcı bulunamadı!');
-            }
+            // MongoDB'den ban kaydını sil
+            await Ban.findOneAndDelete({ userId: user.id, guildId: message.guild.id });
 
-            await message.guild.members.unban(userId, reason);
-            message.reply(`${bannedUser.user.tag} kullanıcısının yasağı kaldırıldı. Sebep: ${reason}`);
-            logger.log(message.guild, 'UNBAN', message.author, bannedUser.user, reason);
+            const successEmbed = new EmbedBuilder()
+                .setColor("#00ff00")
+                .setTitle("✅ Kullanıcı Yasaklaması Kaldırıldı")
+                .setDescription(`**${user.tag}** kullanıcısının yasaklaması kaldırıldı.`)
+                .setTimestamp()
+                .setFooter({ text: message.guild.name });
+
+            message.reply({ embeds: [successEmbed] });
         } catch (error) {
-            console.error('Unban hatası:', error);
-            message.reply('Kullanıcının yasağı kaldırılırken bir hata oluştu!');
+            const errorEmbed = new EmbedBuilder()
+                .setColor("#ff0000")
+                .setDescription("❌ Kullanıcı yasaklaması kaldırılırken bir hata oluştu!")
+                .setFooter({ text: message.guild.name });
+            message.reply({ embeds: [errorEmbed] });
         }
     },
 };
