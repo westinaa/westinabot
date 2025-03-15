@@ -1,10 +1,7 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const { EmbedBuilder } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
-
-const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
+const User = require("../../models/userModel.js"); // MongoDB modelini dahil ettik
 
 module.exports = {
     name: "unjail",
@@ -50,14 +47,18 @@ module.exports = {
                 return message.reply({ embeds: [errorEmbed] });
             }
 
-            // JSON dosyasından kullanıcıyı bul ve önceki rollerini al
-            let jailRolesData = {};
-            if (fs.existsSync(jailRolesPath)) {
-                jailRolesData = JSON.parse(fs.readFileSync(jailRolesPath, "utf8"));
+            // Kullanıcının MongoDB verilerini al
+            const existingUser = await User.findOne({ userId: user.id });
+            if (!existingUser) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı veritabanında bulunamadı!")
+                    .setFooter({ text: message.guild.name });
+                return message.reply({ embeds: [errorEmbed] });
             }
 
             // Kullanıcının önceki rollerini al
-            let previousRoles = jailRolesData[user.id];
+            let previousRoles = existingUser.userRoles;
 
             if (!previousRoles || previousRoles.length === 0) {
                 const warningEmbed = new EmbedBuilder()
@@ -81,9 +82,9 @@ module.exports = {
             // Jail rolünü kaldır
             await user.roles.remove(jailRole);
 
-            // JSON dosyasından kullanıcıyı kaldır
-            delete jailRolesData[user.id];
-            fs.writeFileSync(jailRolesPath, JSON.stringify(jailRolesData, null, 4));
+            // Jail kaydını veritabanından sil
+            existingUser.jails = existingUser.jails.filter(jail => jail.jailEndTime === null); // Süresiz olanlar hariç
+            await existingUser.save();
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#98ff98")
