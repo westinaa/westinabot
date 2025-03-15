@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const UserStats = require('../models/userStats'); // MongoDB modelini import et
+const UserStats = require('../../models/userStats'); // MongoDB modelini import et
 const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
