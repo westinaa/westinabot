@@ -40,11 +40,11 @@ module.exports = {
             new ButtonBuilder()
                 .setCustomId("writtenMute")
                 .setLabel("Yazılı Mute")
-                .setStyle("PRIMARY"),
+                .setStyle("Primary"), // Burada 'Primary' doğru stil adı
             new ButtonBuilder()
                 .setCustomId("voiceMute")
                 .setLabel("Sesli Mute")
-                .setStyle("PRIMARY")
+                .setStyle("Primary") // Burada 'Primary' doğru stil adı
         );
 
         const confirmationEmbed = new EmbedBuilder()
