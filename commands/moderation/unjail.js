@@ -64,6 +64,12 @@ module.exports = {
             const previousRoles = userRecord.previousRoles;
             if (previousRoles && previousRoles.length > 0) {
                 await user.roles.add(previousRoles);
+            } else {
+                const warningEmbed = new EmbedBuilder()
+                    .setColor("#ff9900")
+                    .setDescription("<a:westina_warning:1349419144243576974> Kullanıcının önceki rollerini bulamadım!")
+                    .setFooter({ text: message.guild.name });
+                message.reply({ embeds: [warningEmbed] });
             }
 
             // MongoDB kaydını sil
