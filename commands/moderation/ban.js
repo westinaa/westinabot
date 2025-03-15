@@ -41,7 +41,7 @@ module.exports = {
             userTag = `<@${user.id}>`;
         } else {
             // Eğer etiketle kullanıcı bulunduysa, tag'ini alıyoruz.
-            userTag = `<@${user.id}>`;  // Burada userTag'i direkt etiket ID formatında alıyoruz
+            userTag = `${user.tag}`;  // Burada userTag'i direkt etiket ID formatında alıyoruz
         }
 
         const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
@@ -82,4 +82,10 @@ module.exports = {
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescrip
+                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı yasaklanırken bir hata oluştu!")
+                .setFooter({ text: message.guild.name });
+            message.reply({ embeds: [errorEmbed] });
+            console.error("Ban işlemi hatası:", error);
+        }
+    },
+};
