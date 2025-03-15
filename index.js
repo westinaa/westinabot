@@ -1,3 +1,4 @@
+bu
 const {
     Client,
     GatewayIntentBits,
@@ -79,6 +80,13 @@ for (const folder of commandFolders) {
         const command = require(`./commands/${folder}/${file}`);
         client.commands.set(command.name, command);
     }
+}
+
+// Event handler'ları yükle
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+for (const file of eventFiles) {
+  const event = require(`./events/${file}`);
+  client.on(event.name, event.execute.bind(null, client));
 }
 
 // Sayaç sistemi modülünü dahil et
