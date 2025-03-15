@@ -1,6 +1,6 @@
 const { permissions } = require("../../utils/permissions.js");
 const { EmbedBuilder } = require("discord.js");
-const Ban = require("../../models/ban.js");
+const UserModel = require("../../models/userModel.js"); // UserModel'i dahil et
 
 module.exports = {
     name: "unban",
@@ -47,7 +47,10 @@ module.exports = {
             await message.guild.members.unban(user.id);
 
             // MongoDB'den ban kaydını sil
-            await Ban.findOneAndDelete({ userId: user.id, guildId: message.guild.id });
+            await UserModel.findOneAndUpdate(
+                { userId: user.id, guildId: message.guild.id },
+                { $pull: { bans: { userId: user.id } } }  // 'bans' dizisinden ilgili ban bilgisini çıkar
+            );
 
             // Kullanıcıyı etiketle, ID'yi veya tag'ını kontrol et
             const userDisplay = user.tag || `<@${user.id}>`;
@@ -55,7 +58,7 @@ module.exports = {
             const successEmbed = new EmbedBuilder()
                 .setColor("#00ff00")
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Yasaklaması Kaldırıldı")
-                .setDescription(`${userDisplay} kullanıcısının yasaklaması kaldırıldı.`)
+                .setDescription(`${userDisplay} kullanıcısının yasaklaması başarıyla kaldırıldı.`)
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
 
