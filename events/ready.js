@@ -12,8 +12,8 @@ module.exports = {
         if (channel) {
             const embed = new EmbedBuilder()
                 .setColor("#ffffff")
-                .setTitle("🚀 Bot Başlatıldı!")
-                .setDescription("Bot başarıyla yeniden başlatıldı ve şimdi aktif!")
+                .setTitle("🚀 Bot başarıyla başlatıldı.")
+                .setDescription("<a:westina_onay:1349184023867691088> Bot, VDS, MongoDB girişleri başarılı oldu ve şu an aktif.")
                 .setTimestamp()
                 .setFooter({ text: client.user.username });
 
