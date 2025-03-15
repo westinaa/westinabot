@@ -112,7 +112,7 @@ client.once("ready", async () => {
         // Kanalı bul ve mesaj gönder
         const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
         if (logChannel) {
-            await logChannel.send(`> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**\n\nBot aktif olma zamanı: ${activeTime}`);
+            await logChannel.send(`> <:online:1349504905374863484> Giriş Başarılı! \n \n**Shards, commands, utils, events ve MongoDB başarıyla aktif edildi!** <:w_tik:1350471905856978976>\n\n<:stack:1345875393961398282> Bot aktif olma zamanı: ${activeTime}`);
         }
     } catch (error) {
         console.error("Kanal bulunamadı ya da mesaj gönderilemedi: ", error);
