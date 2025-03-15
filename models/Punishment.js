@@ -12,7 +12,7 @@ const punishmentSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true }, // Cezanın aktif olup olmadığını kontrol eder
 });
 
-// Punishment Modeli
-const Punishment = mongoose.model('Punishment', punishmentSchema);
+// Eğer Punishment modeli zaten tanımlandıysa, yeniden tanımlamaya çalışma
+const Punishment = mongoose.models.Punishment || mongoose.model('Punishment', punishmentSchema);
 
 module.exports = Punishment;
