@@ -2,11 +2,7 @@ const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
 const User = require("../../models/userModel.js"); // MongoDB modelini dahil ettik
-
-const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
 
 module.exports = {
     name: "jail",
@@ -64,15 +60,40 @@ module.exports = {
             // Kullanıcının mevcut rollerini kaydet
             const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id && r.name !== "sponsor").map(r => r.id);  // "sponsor" rolünü filtrele
 
-            // Jail roles verisini JSON dosyasına kaydet
-            let jailRolesData = {};
-            if (fs.existsSync(jailRolesPath)) {
-                jailRolesData = JSON.parse(fs.readFileSync(jailRolesPath, "utf8"));
-            }
+            // Jail işlemi veritabanında
+            const existingUser = await User.findOne({ userId: user.id });
 
-            // Kullanıcının rollerini JSON dosyasına kaydediyoruz
-            jailRolesData[user.id] = userRoles;
-            fs.writeFileSync(jailRolesPath, JSON.stringify(jailRolesData, null, 4));
+            if (existingUser) {
+                // Kullanıcı zaten veritabanında varsa, jail bilgisini ekle
+                existingUser.jails.push({
+                    createdAt: new Date(),
+                    reason: reason,
+                    jailEndTime: null,  // Süresiz olarak
+                    moderatorId: message.author.id,
+                });
+
+                // Kullanıcının rollerini de veritabanına kaydet
+                existingUser.userRoles = userRoles;
+
+                await existingUser.save();
+            } else {
+                // Kullanıcı veritabanında yoksa, yeni kayıt oluştur
+                const jailData = {
+                    userId: user.id,
+                    guildId: message.guild.id,
+                    jails: [{
+                        createdAt: new Date(),
+                        reason: reason,
+                        jailEndTime: null,  // Süresiz
+                        moderatorId: message.author.id,
+                    }],
+                    userRoles: userRoles,  // Kullanıcı rollerini kaydediyoruz
+                    mutes: [],
+                    bans: [],
+                };
+
+                await new User(jailData).save();
+            }
 
             // "Sponsor" rolü varsa, bu rolü kaldırma
             const sponsorRole = user.roles.cache.find(r => r.name === "sponsor");
@@ -84,31 +105,6 @@ module.exports = {
                 // "Sponsor" rolü yoksa, tüm rolleri kaldır ve jail rolünü ver
                 await user.roles.remove(userRoles);
                 await user.roles.add(jailRole);
-            }
-
-            // MongoDB'de mevcut kullanıcıyı kontrol et
-            const existingUser = await User.findOne({ userId: user.id });
-
-            if (existingUser) {
-                // Eğer kullanıcı zaten cezalıysa, sadece güncelle
-                await User.updateOne(
-                    { userId: user.id },  // Hangi kullanıcıyı güncellemek istediğimizi belirtiyoruz
-                    { $set: { jailEndTime: null, reason: reason, moderatorId: message.author.id } }  // Güncellemek istediğimiz veriler
-                );
-                console.log("Kullanıcı güncellendi");
-            } else {
-                // Eğer kullanıcı veritabanında yoksa, yeni bir kayıt ekle
-                const jailData = {
-                    userId: user.id,
-                    guildId: message.guild.id,
-                    jailEndTime: null, // Süresiz olduğundan sonlanma zamanı yok
-                    reason: reason,
-                    moderatorId: message.author.id,
-                };
-
-                // MongoDB'ye kullanıcıyı kaydet
-                await new User(jailData).save();
-                console.log("Yeni kullanıcı cezalı olarak kaydedildi");
             }
         } catch (error) {
             console.error("Kullanıcı hapse atılırken bir hata oluştu:", error);
