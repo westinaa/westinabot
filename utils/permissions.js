@@ -17,6 +17,13 @@ exports.permissions = {
         if (member.roles && member.roles.cache && Array.isArray(member.roles.cache)) {
             return member.roles.cache.some(role => config.moderatorRoles.includes(role.name));
         }
+
+function checkAdmin(member) {
+    return member.permissions.has("Administrator");
+}
+
+module.exports = { checkAdmin };
+
         
         return false;
     }
