@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js'); // MessageEmbed yerine EmbedBuilder kullanıyoruz
-const UserModel = require('../models/userModel');
-const Punishment = require('../models/Punishment');
+const UserModel = require('../../models/userModel.js');
+const Punishment = require('../models/Punishment.js');
 
 module.exports = {
   name: 'sicil', // Komut adı
