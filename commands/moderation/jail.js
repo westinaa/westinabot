@@ -37,6 +37,9 @@ module.exports = {
 
         const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
+            // Kullanıcının mevcut rollerini kaydet
+            const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id && r.name !== "sponsor").map(r => r.id);  // "sponsor" rolünü filtrele
+
         // Jail rolünü kontrol et veya oluştur
         let jailRole = message.guild.roles.cache.find(role => role.name === "cezalı");
         if (!jailRole) {
@@ -66,12 +69,18 @@ module.exports = {
         }
 
         try {
-            // Kullanıcının mevcut rollerini kaydet
-            const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id).map(r => r.id);
 
-            // Tüm rolleri kaldır ve jail rolünü ver
-            await user.roles.remove(userRoles);
-            await user.roles.add(jailRole);
+            // "Sponsor" rolü varsa, bu rolü kaldırma
+            const sponsorRole = user.roles.cache.find(r => r.name === "sponsor");
+            if (sponsorRole) {
+                // "Sponsor" rolünü tut ve diğer rollerden "sponsor" dışındaki rolleri kaldır
+                await user.roles.remove(userRoles);
+                await user.roles.add(jailRole);  // Jail rolünü ekle
+            } else {
+                // "Sponsor" rolü yoksa, tüm rolleri kaldır ve jail rolünü ver
+                await user.roles.remove(userRoles);
+                await user.roles.add(jailRole);
+            }
 
             // MongoDB'ye kullanıcıyı kaydet
             const jailEndTime = Date.now() + duration * 3600000; // Şu anki zaman + süre
@@ -108,7 +117,7 @@ module.exports = {
                     const jailRecord = await userModel.findOne({ userId: user.id, guildId: message.guild.id });
                     if (jailRecord) {
                         await user.roles.remove(jailRole);
-                        await user.roles.add(userRoles);
+                        await user.roles.add(userRoles);  // Sponsor rolü olmadığı için geri ekleme yapmıyoruz
 
                         const releaseEmbed = new EmbedBuilder()
                             .setColor("#00ff00")
