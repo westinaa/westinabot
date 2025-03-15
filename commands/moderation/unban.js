@@ -1,6 +1,6 @@
 const { permissions } = require("../../utils/permissions.js");
 const { EmbedBuilder } = require("discord.js");
-const Ban = require("../../models/Ban");
+const Ban = require("../../models/ban.js");
 
 module.exports = {
     name: "unban",
