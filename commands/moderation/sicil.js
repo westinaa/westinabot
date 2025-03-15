@@ -1,22 +1,21 @@
-const { EmbedBuilder } = require('discord.js'); // MessageEmbed yerine EmbedBuilder kullanıyoruz
+const { EmbedBuilder } = require('discord.js');
 const UserModel = require('../../models/userModel.js');
 const Punishment = require('../../models/Punishment.js');
 
 module.exports = {
-  name: 'sicil', // Komut adı
+  name: 'sicil',
   description: 'Kullanıcının geçmiş cezalarını gösterir.',
 
   async execute(message, args) {
-    const userId = args[0] || message.author.id;  // Kullanıcı ID'sini al
+    const userId = (args[0] || message.author.id).toString();  // ID'yi String formatına çeviriyoruz
+    console.log('Aranan Kullanıcı ID:', userId);  // ID'yi loglayalım
 
-    // ID'yi loglayarak doğru şekilde alındığından emin olalım
-    console.log('Aranan Kullanıcı ID:', userId);
-
-    // Kullanıcıyı veritabanından bul
     try {
+      // Kullanıcıyı veritabanından bul
       const user = await UserModel.findOne({ userId: userId });
-      
+
       if (!user) {
+        console.log('Veritabanında kullanıcı bulunamadı', userId);  // Veritabanında kullanıcı bulunamazsa logla
         return message.reply('Bu kullanıcı bulunamadı.');
       }
 
@@ -28,7 +27,7 @@ module.exports = {
       // Embed mesajı için başlık
       const embed = new EmbedBuilder()
         .setTitle('Kullanıcı Cezaları - ' + (userId === message.author.id ? 'Sizin Geçmişiniz' : 'Kullanıcı: ' + userId))
-        .setColor('#FFFFFF')  // Renk beyaz
+        .setColor('#FFFFFF')
         .setTimestamp()
         .setFooter({ text: 'Ceza Bilgisi', iconURL: message.guild.iconURL() });
 
