@@ -26,7 +26,6 @@ module.exports = {
 
       // Tarihe göre sıralama (En yeni cezalar en üstte olacak)
       allPunishments.sort((a, b) => {
-        // createdAt kontrolü
         const dateA = a.createdAt ? a.createdAt.getTime() : 0;
         const dateB = b.createdAt ? b.createdAt.getTime() : 0;
         return dateB - dateA;
@@ -41,16 +40,40 @@ module.exports = {
         const end = start + perPage;
         const currentPunishments = allPunishments.slice(start, end);
 
-        const punishmentList = currentPunishments.map(p =>
-          `**${p.type}** • <t:${Math.floor(p.createdAt ? p.createdAt.getTime() / 1000 : 0)}:R>\n` +
-          `🔹 **Yetkili:** <@${p.moderatorId}>\n` +
-          `🔹 **Sebep:** ${p.reason}\n`
-        ).join('\n');
+        const punishmentList = currentPunishments.map(p => {
+          const punishmentDate = p.createdAt ? `<t:${Math.floor(p.createdAt.getTime() / 1000)}:R>` : 'Tarih Bilgisi Yok';
+          const moderator = p.moderatorId ? `<@${p.moderatorId}>` : 'Bilinmiyor';
+          const reason = p.reason || 'Sebep Bilgisi Yok';
+
+          // Ceza türüne göre emoji ekle
+          let emoji;
+          switch (p.type) {
+            case 'Ban':
+              emoji = '<a:pepeban:1345852922533122160>';
+              break;
+            case 'Jail':
+              emoji = '<:w_jail:1349478025170784278>';
+              break;
+            case 'Mute':
+              emoji = '<:Mute2:1216364500865908806>';
+              break;
+            case 'VMute':
+              emoji = '<:Mute:1216364483371335793>';
+              break;
+            default:
+              emoji = '';
+              break;
+          }
+
+          return `**${emoji} ${p.type}** • ${punishmentDate}\n` +
+                 `<:wstaff:1349521387517382780> **Yetkili:** ${moderator}\n` +
+                 `<:update:1346630749046181953> **Sebep:** ${reason}\n`;
+        }).join('\n');
 
         return new EmbedBuilder()
           .setTitle(`${user.tag} Kullanıcı Sicili`)
           .setDescription(punishmentList || 'Bu sayfada ceza yok.')
-          .setColor('#ff0000')
+          .setColor('#ffffff')
           .setFooter({ text: `Sayfa ${page + 1}/${Math.ceil(allPunishments.length / perPage)}` });
       };
 
