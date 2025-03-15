@@ -49,10 +49,13 @@ module.exports = {
             // MongoDB'den ban kaydını sil
             await Ban.findOneAndDelete({ userId: user.id, guildId: message.guild.id });
 
+            // Kullanıcıyı etiketle, ID'yi veya tag'ını kontrol et
+            const userDisplay = user.tag || `<@${user.id}>`;
+
             const successEmbed = new EmbedBuilder()
                 .setColor("#00ff00")
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Yasaklaması Kaldırıldı")
-                .setDescription(`**${user.tag}** kullanıcısının yasaklaması kaldırıldı.`)
+                .setDescription(`${userDisplay} kullanıcısının yasaklaması kaldırıldı.`)
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
 
