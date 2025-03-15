@@ -52,6 +52,28 @@ module.exports = {
                 { $pull: { bans: { userId: user.id } } }  // 'bans' dizisinden ilgili ban bilgisini çıkar
             );
 
+            // Moderatör bilgisi eklemek
+            let userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
+            if (!userData) {
+                userData = new UserModel({
+                    userId: user.id,
+                    guildId: message.guild.id,
+                    mutes: [],
+                    jails: [],
+                    bans: [],
+                    vmutes: [] // Bu alan da burada olacak, gelecekte VMute işlemi eklediğinizde kullanılabilir
+                });
+            }
+
+            // Unban işlemine moderatör ekle
+            userData.bans.push({
+                createdAt: new Date(),
+                reason: "Yasaklama kaldırıldı",
+                moderatorId: message.author.id // Moderatör ID'si
+            });
+
+            await userData.save(); // Kullanıcı verisini kaydet
+
             // Kullanıcıyı etiketle, ID'yi veya tag'ını kontrol et
             const userDisplay = user.tag || `<@${user.id}>`;
 
