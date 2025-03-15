@@ -4,6 +4,7 @@ const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
+const User = require("../../models/userModel.js");
 
 const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
 
