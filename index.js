@@ -16,22 +16,26 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000, // Zaman aşımını 5 saniye olarak ayarla
-    bufferCommands: false, // Buffering'i kapat
-})
-    .then(() => {
-        console.log("MongoDB'ye bağlanıldı!");
-    })
+async function connectToDB() {
+    const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
+
+    await mongoose.connect(dbURI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000, // Bağlantı zaman aşımı süresi (ms)
+        bufferCommands: false, // Buffering'i kapat
+    });
+
+    console.log("MongoDB'ye bağlanıldı!");
+}
     .catch((error) => {
         console.error("MongoDB'ye bağlanırken hata oluştu:", error);
+      
 connectToDB().then(() => {
     // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
     console.log("Artık veritabanı işlemleri yapılabilir.");
-    });
 });
+
 
 
 app.get("/", (req, res) => {
