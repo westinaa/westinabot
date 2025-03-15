@@ -38,7 +38,7 @@ module.exports = {
       if (mutes.length > 0) {
         logContent += `**<:Mute2:1216364500865908806> Chat Mute Cezaları:**\n`;
         mutes.forEach(mute => {
-          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(mute.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953>**Sebep:** \` ${mute.reason} \`\n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${mute.moderatorId}>\n`;
+          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(mute.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953> **Sebep:** \` ${mute.reason} \` \n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${mute.moderatorId}>\n`;
         });
       }
 
@@ -46,7 +46,7 @@ module.exports = {
       if (jails.length > 0) {
         logContent += `\n**<:w_jail:1349478025170784278> Jail Cezaları:**\n`;
         jails.forEach(jail => {
-          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(jail.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953>**Sebep:** \` ${jail.reason} \`\n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${jail.moderatorId}>\n`;
+          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(jail.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953> **Sebep:** \` ${jail.reason} \` \n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${jail.moderatorId}>\n`;
         });
       }
 
@@ -54,7 +54,7 @@ module.exports = {
       if (bans.length > 0) {
         logContent += `\n**<a:aku_ban:1349419058721849526> Ban Cezaları:**\n`;
         bans.forEach(ban => {
-          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(ban.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953>**Sebep:** \` ${ban.reason} \`\n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${ban.moderatorId}>\n`;
+          logContent += `\` ❯ \` <:events9:1350560935739133952> **Tarih:** <t:${Math.floor(ban.createdAt / 1000)}:R> \n\` ❯ \` <:update:1346630749046181953> **Sebep:** \` ${ban.reason} \` \n\` ❯ \<:wstaff:1349521387517382780> **Yetkili:** <@${ban.moderatorId}>\n`;
         });
       }
 
