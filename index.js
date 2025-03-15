@@ -30,6 +30,7 @@ async function connectToDB() {
             useUnifiedTopology: true,
             serverSelectionTimeoutMS: 5000, // Bağlantı zaman aşımı süresi (ms)
             bufferCommands: false, // Buffering'i kapat
+            ssl: true, 
         });
 
         console.log("MongoDB'ye bağlanıldı!");
