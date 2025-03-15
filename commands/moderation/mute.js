@@ -1,7 +1,7 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
-const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
+const User = require("../../models/userModel.js"); // MongoDB modelini ekledik
 
 module.exports = {
     name: "mute",
@@ -10,7 +10,7 @@ module.exports = {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Bu komutu kullanma yetkiniz yok!")
+                .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -20,9 +20,7 @@ module.exports = {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
                 .setTitle("Eksik argüman!")
-                .setDescription(
-                    "❌ Susturulacak kullanıcıyı etiketlemelisiniz!",
-                )
+                .setDescription("<a:westina_red:1349419144243576974> Susturulacak kullanıcıyı etiketlemelisiniz!")
                 .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -31,9 +29,7 @@ module.exports = {
         if (!duration || isNaN(duration) || duration < 1) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription(
-                    "❌ Geçerli bir süre belirtmelisiniz! (dakika cinsinden)",
-                )
+                .setDescription("<a:westina_red:1349419144243576974> Geçerli bir süre belirtmelisiniz! (dakika cinsinden)")
                 .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -41,12 +37,12 @@ module.exports = {
         const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
         let muteRole = message.guild.roles.cache.find(
-            (role) => role.name === config.muteRoleName,
+            (role) => role.name === "Muted"
         );
         if (!muteRole) {
             try {
                 muteRole = await message.guild.roles.create({
-                    name: config.muteRoleName,
+                    name: "Muted",
                     color: "#808080",
                     reason: "Susturulmuş kullanıcılar için rol",
                 });
@@ -62,9 +58,7 @@ module.exports = {
             } catch (error) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor("#ff0000")
-                    .setDescription(
-                        "❌ Mute rolü oluşturulurken bir hata oluştu!",
-                    )
+                    .setDescription("<a:westina_red:1349419144243576974> Mute rolü oluşturulurken bir hata oluştu!")
                     .setFooter({ text: message.guild.name });
                 return message.reply({ embeds: [errorEmbed] });
             }
@@ -72,10 +66,18 @@ module.exports = {
 
         try {
             await user.roles.add(muteRole);
+
+            // MongoDB'ye kaydetme
+            await User.findOneAndUpdate(
+                { userID: user.id },
+                { $set: { muted: true, muteExpiry: Date.now() + duration * 60000 } },
+                { upsert: true }
+            );
+
             const successEmbed = new EmbedBuilder()
                 .setColor("#800080")
-                .setTitle("🔇 Kullanıcı Susturuldu")
-                .setDescription(`**${user.user.tag}** kullanıcısı susturuldu.`)
+                .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Susturuldu")
+                .setDescription(`**${user.user.tag}** kullanıcısı başarıyla susturuldu.`)
                 .addFields(
                     {
                         name: "👮 Moderatör",
@@ -105,14 +107,21 @@ module.exports = {
                 try {
                     if (user.roles.cache.has(muteRole.id)) {
                         await user.roles.remove(muteRole);
+                        
+                        // MongoDB'den mute bilgilerini kaldırma
+                        await User.findOneAndUpdate(
+                            { userID: user.id },
+                            { $set: { muted: false, muteExpiry: null } },
+                            { upsert: true }
+                        );
+
                         const unmuteEmbed = new EmbedBuilder()
                             .setColor("#00ffff")
-                            .setTitle("🔊 Susturma Kaldırıldı")
-                            .setDescription(
-                                `**${user.user.tag}** kullanıcısının susturulması sona erdi.`,
-                            )
+                            .setTitle("<a:westina_onay:1349184023867691088> Susturma Kaldırıldı")
+                            .setDescription(`**${user.user.tag}** kullanıcısının susturulması sona erdi.`)
                             .setTimestamp()
                             .setFooter({ text: message.guild.name });
+
                         message.channel.send({ embeds: [unmuteEmbed] });
                         logger.log(
                             message.guild,
@@ -125,17 +134,15 @@ module.exports = {
                 } catch (error) {
                     const errorEmbed = new EmbedBuilder()
                         .setColor("#ff0000")
-                        .setDescription(
-                            "❌ Kullanıcının susturulması kaldırılırken bir hata oluştu!",
-                        )
+                        .setDescription("<a:westina_red:1349419144243576974> Kullanıcının susturulması kaldırılırken bir hata oluştu!")
                         .setFooter({ text: message.guild.name });
                     message.channel.send({ embeds: [errorEmbed] });
                 }
-            }, duration * 60000);
+            }, duration * 60000); // Dakika cinsinden süreyi milisaniyeye çevir
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Kullanıcı susturulurken bir hata oluştu!")
+                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı susturulurken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
         }
