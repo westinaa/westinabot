@@ -1,5 +1,5 @@
 const { permissions } = require("../../utils/permissions.js");
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require("discord.js");
 const User = require("../../models/userModel.js");
 const ms = require("ms"); // Süreyi işlemek için ms modülünü kullanıyoruz.
 
@@ -40,11 +40,11 @@ module.exports = {
             new ButtonBuilder()
                 .setCustomId("writtenMute")
                 .setLabel("Yazılı Mute")
-                .setStyle("Primary"), // Burada 'Primary' doğru stil adı
+                .setStyle("PRIMARY"),
             new ButtonBuilder()
                 .setCustomId("voiceMute")
                 .setLabel("Sesli Mute")
-                .setStyle("Primary") // Burada 'Primary' doğru stil adı
+                .setStyle("PRIMARY")
         );
 
         const confirmationEmbed = new EmbedBuilder()
@@ -74,12 +74,12 @@ module.exports = {
                 await user.roles.add(mutedRole); // "Muted" rolünü ekle
 
                 // Metin kanallarında yazma engelle
-                user.permissions.remove("SEND_MESSAGES"); // Metin kanalında yazmayı engelle
+                await user.permissions.remove(PermissionsBitField.Flags.SendMessages); // Metin kanalında yazmayı engelle
 
                 // Yazılı mute için süreyi başlat
                 setTimeout(async () => {
                     await user.roles.remove(mutedRole); // Süre dolduğunda "Muted" rolünü kaldır
-                    user.permissions.add("SEND_MESSAGES"); // Yazma izni ver
+                    await user.permissions.add(PermissionsBitField.Flags.SendMessages); // Yazma izni ver
                 }, ms(time));
 
                 const successEmbed = new EmbedBuilder()
@@ -97,6 +97,14 @@ module.exports = {
                 message.reply({ embeds: [successEmbed] });
             } else if (interaction.customId === "voiceMute") {
                 // Sesli mute
+                if (!user.voice.channel) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor("#ff0000")
+                        .setDescription("<a:westina_red:1349419144243576974> Kullanıcı sesli kanala bağlı değil!")
+                        .setFooter({ text: message.guild.name });
+                    return message.reply({ embeds: [errorEmbed] });
+                }
+
                 await user.voice.setMute(true, reason); // Kullanıcının sesini sustur
                 setTimeout(() => {
                     user.voice.setMute(false);  // Süre dolunca sesli mute'u kaldır
