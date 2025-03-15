@@ -1,11 +1,10 @@
-const { permissions } = require('../../utils/permissions.js');
-const logger = require('../../utils/logger.js');
-const { EmbedBuilder } = require('discord.js');
-const User = require("../../models/userModel.js"); // MongoDB modelini ekledik
+const { permissions } = require("../../utils/permissions.js");
+const { EmbedBuilder, MessageActionRow, MessageButton } = require("discord.js");
+const User = require("../../models/userModel.js");
 
 module.exports = {
-    name: 'unmute',
-    description: 'Kullanıcının susturulmasını kaldırır',
+    name: "unmute",
+    description: "Kullanıcıyı mute durumundan çıkarır.",
     async execute(message, args) {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
@@ -15,78 +14,104 @@ module.exports = {
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        const user = message.mentions.members.first();
+        const user = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
         if (!user) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setTitle("Eksik argüman!")
-                .setDescription("<a:westina_red:1349419144243576974> Susturması kaldırılacak kullanıcıyı etiketlemelisiniz!")
+                .setDescription("<a:westina_red:1349419144243576974> Unmute edilecek kullanıcıyı etiketlemelisiniz!")
                 .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi';
-        const muteRole = message.guild.roles.cache.find(role => role.name === "Muted");
+        const reason = args.slice(1).join(" ") || "Sebep belirtilmedi.";
 
-        if (!muteRole) {
-            const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
-                .setDescription("<a:westina_red:1349419144243576974> Mute rolü bulunamadı!")
-                .setFooter({ text: message.guild.name });
-            return message.reply({ embeds: [errorEmbed] });
-        }
+        // Unmute butonları oluştur
+        const row = new MessageActionRow().addComponents(
+            new MessageButton()
+                .setCustomId("writtenUnmute")
+                .setLabel("Yazılı Unmute")
+                .setStyle("PRIMARY"),
+            new MessageButton()
+                .setCustomId("voiceUnmute")
+                .setLabel("Sesli Unmute")
+                .setStyle("PRIMARY")
+        );
 
-        try {
-            console.log(`Unmute işlemi başlatıldı - Kullanıcı: ${user.user.tag}`);
+        const confirmationEmbed = new EmbedBuilder()
+            .setColor("#FFA500")
+            .setTitle("Unmute Seçeneğini Seçin")
+            .setDescription("Unmute türünü seçmek için butonlardan birine tıklayın.")
+            .setFooter({ text: message.guild.name });
 
-            if (!user.roles.cache.has(muteRole.id)) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor("#ff0000")
-                    .setDescription("<a:westina_red:1349419144243576974> Bu kullanıcı zaten susturulmamış!")
+        message.reply({ embeds: [confirmationEmbed], components: [row] });
+
+        // Butonların tıklanma olayını dinle
+        const filter = (interaction) => interaction.user.id === message.author.id;
+        const collector = message.channel.createMessageComponentCollector({ filter, time: 15000 });
+
+        collector.on("collect", async (interaction) => {
+            if (interaction.customId === "writtenUnmute") {
+                // Yazılı unmute
+                const mutedRole = message.guild.roles.cache.find(role => role.name === "Muted"); // "Muted" rolünü bul
+
+                if (user.roles.cache.has(mutedRole.id)) {
+                    await user.roles.remove(mutedRole); // "Muted" rolünü kaldır
+                }
+
+                // Kullanıcının mute bilgisini veritabanından sil
+                const existingUser = await User.findOne({ userId: user.id });
+                if (existingUser) {
+                    existingUser.mutes = existingUser.mutes.filter(mute => mute.muteEndTime === null); // Süresiz mute'leri kaldır
+                    await existingUser.save();
+                }
+
+                const successEmbed = new EmbedBuilder()
+                    .setColor("#98ff98")
+                    .setTitle("🔊 Yazılı Unmute Uygulandı")
+                    .setDescription(`**${user.user.tag}** kullanıcısının yazılı mute'u kaldırıldı.`)
+                    .addFields(
+                        { name: "👮 Moderatör", value: message.author.tag, inline: true },
+                        { name: "📝 Sebep", value: reason }
+                    )
+                    .setTimestamp()
                     .setFooter({ text: message.guild.name });
-                return message.reply({ embeds: [errorEmbed] });
+
+                message.reply({ embeds: [successEmbed] });
+            } else if (interaction.customId === "voiceUnmute") {
+                // Sesli unmute
+                await user.voice.setMute(false); // Kullanıcının mikrofonunu aç
+
+                // Kullanıcının mute bilgisini veritabanından sil
+                const existingUser = await User.findOne({ userId: user.id });
+                if (existingUser) {
+                    existingUser.mutes = existingUser.mutes.filter(mute => mute.muteEndTime === null); // Süresiz mute'leri kaldır
+                    await existingUser.save();
+                }
+
+                const successEmbed = new EmbedBuilder()
+                    .setColor("#98ff98")
+                    .setTitle("🔊 Sesli Unmute Uygulandı")
+                    .setDescription(`**${user.user.tag}** kullanıcısının sesli mute'u kaldırıldı.`)
+                    .addFields(
+                        { name: "👮 Moderatör", value: message.author.tag, inline: true },
+                        { name: "📝 Sebep", value: reason }
+                    )
+                    .setTimestamp()
+                    .setFooter({ text: message.guild.name });
+
+                message.reply({ embeds: [successEmbed] });
             }
 
-            // MongoDB'den mute bilgisini kaldırıyoruz
-            await User.findOneAndUpdate(
-                { userID: user.id },
-                { $set: { muted: false, muteExpiry: null } },
-                { upsert: true }
-            );
+            // Etkileşimi kapat
+            interaction.deferUpdate();
+        });
 
-            // Mute rolünü kaldırma işlemi
-            await user.roles.remove(muteRole);
-
-            const successEmbed = new EmbedBuilder()
-                .setColor("#00ffff")
-                .setTitle("<a:westina_onay:1349184023867691088> Susturma Kaldırıldı")
-                .setDescription(`**${user.user.tag}** kullanıcısının susturulması başarıyla kaldırıldı.`)
-                .addFields(
-                    {
-                        name: "👮 Moderatör",
-                        value: message.author.tag,
-                        inline: true,
-                    },
-                    { name: "📝 Sebep", value: reason },
-                )
-                .setTimestamp()
-                .setFooter({ text: message.guild.name });
-
-            message.reply({ embeds: [successEmbed] });
-            logger.log(
-                message.guild,
-                "UNMUTE",
-                message.author,
-                user.user,
-                reason,
-            );
-        } catch (error) {
-            console.error("Unmute hatası:", error);
-            const errorEmbed = new EmbedBuilder()
+        collector.on("end", () => {
+            const timeoutEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("<a:westina_red:1349419144243576974> Kullanıcının susturulması kaldırılırken bir hata oluştu!")
+                .setDescription("<a:westina_red:1349419144243576974> Süre doldu, unmute türü seçilmedi!")
                 .setFooter({ text: message.guild.name });
-            message.reply({ embeds: [errorEmbed] });
-        }
+            message.reply({ embeds: [timeoutEmbed] });
+        });
     },
 };
