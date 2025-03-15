@@ -28,7 +28,7 @@ module.exports = {
                 const endTime = Date.now();
                 uptimeLatency = endTime - startTime;
                 uptimeStatus = (res.statusCode >= 200 && res.statusCode < 300) ? '<a:yellow_verify:1346909656685084745>' : '⚠️';
-                const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping (${renderURL}):** ${uptimeStatus} ${uptimeLatency}ms (HTTP ${res.statusCode})`;
+                const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping:** ${uptimeStatus} \` ${uptimeLatency}ms \` (PORT ${res.statusCode})`;
                 initialMessage.edit(finalMessage).catch(console.error);
             });
 
