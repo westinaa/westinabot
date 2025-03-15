@@ -1,16 +1,15 @@
-const { permissions } = require("../../utils/permissions.js");
 const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "emoji",
     description: "Bir emojiyi sunucuya ekler",
     async execute(message, args) {
-        // Yetki kontrolü
-        if (!permissions.checkAdmin(message.member)) {
+        // Yetki kontrolü: "Emojileri Yönet" yetkisi olup olmadığını kontrol et
+        if (!message.member.permissions.has("ManageEmojisAndStickers")) {
             return message.reply({
                 embeds: [new EmbedBuilder()
                     .setColor("#ffffff")
-                    .setDescription("<a:w_carpi:1350461649751900271> Bu komutu kullanmak için yetkiniz yok!")
+                    .setDescription("<a:w_carpi:1350461649751900271> Bu komutu kullanmak için `Emojileri Yönet` yetkiniz olmalıdır!")
                 ]
             });
         }
@@ -41,7 +40,7 @@ module.exports = {
 
         const emojiId = emojiMatch[1];
         const isAnimated = emojiArg.startsWith("<a:"); // Hareketli emoji mi?
-        const emojiURL = `https://${isAnimated ? "cdn.discordapp.com/emojis" : "cdn.discordapp.com/emojis"}/${emojiId}.${isAnimated ? "gif" : "png"}`;
+        const emojiURL = `https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? "gif" : "png"}`;
 
         try {
             // Emojiyi sunucuya ekle
