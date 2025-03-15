@@ -1,7 +1,6 @@
 const { permissions } = require("../../utils/permissions.js");
 const { EmbedBuilder } = require("discord.js");
-const Ban = require("../../models/ban.js"); // Ban modelini dahil ediyoruz
-const UserModel = require("../../models/userModel.js"); // UserModel'i dahil ediyoruz (Mute ve Jail için)
+const UserModel = require("../../models/userModel.js"); // UserModel'i dahil ediyoruz (Ban, Mute, Jail için)
 
 module.exports = {
     name: "sicil",
@@ -50,13 +49,10 @@ module.exports = {
 
         // Veritabanından ceza geçmişini çekme
         try {
-            // Ban verisini Ban modelinden alıyoruz
-            const userBanData = await Ban.find({ userId: user.id, guildId: message.guild.id });
-
-            // UserModel üzerinden mute ve jail verilerini çekiyoruz
+            // UserModel üzerinden ban, mute ve jail verilerini çekiyoruz
             const userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
 
-            if (!userBanData.length && !userData) {
+            if (!userData) {
                 const noDataEmbed = new EmbedBuilder()
                     .setColor("#ffffff")  // Rengi beyaz yaptım
                     .setTitle("Ceza Geçmişi")
@@ -69,28 +65,26 @@ module.exports = {
             let embedDescription = `**${userTag}** kullanıcısının ceza geçmişi:\n\n`;
 
             // Yasaklamalar (Banlar)
-            if (userBanData.length > 0) {
+            if (userData.bans && userData.bans.length > 0) {
                 embedDescription += `**Yasaklamalar:**\n`;
-                userBanData.forEach(ban => {
+                userData.bans.forEach(ban => {
                     embedDescription += `- Yasaklanma Tarihi: ${ban.createdAt.toDateString()}\nSebep: ${ban.reason || 'Sebep belirtilmemiş'}\n\n`;
                 });
             }
 
             // Mute ve Jail verileri
-            if (userData) {
-                if (userData.mutes && userData.mutes.length > 0) {
-                    embedDescription += `**Mutele Alınmalar:**\n`;
-                    userData.mutes.forEach(mute => {
-                        embedDescription += `- Mute Tarihi: ${mute.createdAt.toDateString()}\nSebep: ${mute.reason || 'Sebep belirtilmemiş'}\n\n`;
-                    });
-                }
+            if (userData.mutes && userData.mutes.length > 0) {
+                embedDescription += `**Mutele Alınmalar:**\n`;
+                userData.mutes.forEach(mute => {
+                    embedDescription += `- Mute Tarihi: ${mute.createdAt.toDateString()}\nSebep: ${mute.reason || 'Sebep belirtilmemiş'}\n\n`;
+                });
+            }
 
-                if (userData.jails && userData.jails.length > 0) {
-                    embedDescription += `**Jail Uygulamaları:**\n`;
-                    userData.jails.forEach(jail => {
-                        embedDescription += `- Jail Uygulama Tarihi: ${jail.createdAt.toDateString()}\nSebep: ${jail.reason || 'Sebep belirtilmemiş'}\n\n`;
-                    });
-                }
+            if (userData.jails && userData.jails.length > 0) {
+                embedDescription += `**Jail Uygulamaları:**\n`;
+                userData.jails.forEach(jail => {
+                    embedDescription += `- Jail Uygulama Tarihi: ${jail.createdAt.toDateString()}\nSebep: ${jail.reason || 'Sebep belirtilmemiş'}\n\n`;
+                });
             }
 
             // Sicil Embed
