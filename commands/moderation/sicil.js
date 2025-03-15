@@ -1,6 +1,6 @@
-const { MessageEmbed } = require('discord.js');
-const UserModel = require('../../models/userModel.js');
-const Punishment = require('../../models/Punishment.js');
+const { EmbedBuilder } = require('discord.js'); // MessageEmbed yerine EmbedBuilder kullanıyoruz
+const UserModel = require('../models/userModel');
+const Punishment = require('../models/Punishment');
 
 module.exports = {
   name: 'sicil', // Komut adı
@@ -21,11 +21,11 @@ module.exports = {
     const bans = user.bans || [];
 
     // Embed mesajı için başlık
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder() // MessageEmbed yerine EmbedBuilder
       .setTitle('Kullanıcı Cezaları - ' + (userId === message.author.id ? 'Sizin Geçmişiniz' : 'Kullanıcı: ' + userId))
       .setColor('#FFFFFF')  // Renk beyaz
       .setTimestamp()
-      .setFooter('Ceza Bilgisi', message.guild.iconURL());
+      .setFooter({ text: 'Ceza Bilgisi', iconURL: message.guild.iconURL() }); // setFooter'da text ve iconURL ayrı obje olarak ayarlandı
 
     // Ceza türlerini ekle
     let logContent = '';
