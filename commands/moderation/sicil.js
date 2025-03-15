@@ -1,127 +1,127 @@
 const { permissions } = require("../../utils/permissions.js");
+const logger = require("../../utils/logger.js");
 const { EmbedBuilder } = require("discord.js");
-const UserModel = require("../../models/userModel.js");
+const User = require("../../models/userModel.js"); // MongoDB modelini dahil ettik
 
 module.exports = {
-    name: "sicil",
-    description: "Kullanıcının tüm ceza geçmişini gösterir",
+    name: "unjail",
+    description: "Kullanıcıyı hapisten çıkarır",
     async execute(message, args) {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")
+                .setColor("#ff0000")
                 .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
-                .setFooter({ text: "made by westina <3" });
+                .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        let user;
-        let userTag = '';
-
-        if (message.mentions.users.size > 0) {
-            user = message.mentions.users.first();
-            userTag = `<@${user.id}>`;
-        } else if (args[0]) {
-            const userId = args[0];
-            user = await message.guild.members.fetch(userId).catch(() => null);
-            if (user) userTag = `<@${user.id}>`;
-        } else {
-            const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")
-                .setTitle("Eksik argüman!")
-                .setDescription("<a:westina_red:1349419144243576974> Kullanıcının ID'sini girmelisiniz ya da etiketlemelisiniz!")
-                .setFooter({ text: "made by westina <3" });
-            return message.reply({ embeds: [errorEmbed] });
-        }
-
+        const user = message.mentions.members.first();
         if (!user) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")
-                .setTitle("Geçersiz kullanıcı!")
-                .setDescription("<a:westina_red:1349419144243576974> Bu ID veya etiket ile bir kullanıcı bulunamadı!")
-                .setFooter({ text: "made by westina <3" });
+                .setColor("#ff0000")
+                .setDescription("<a:westina_red:1349419144243576974> Hapisten çıkarılacak kullanıcıyı etiketlemelisiniz!")
+                .setFooter({ text: message.guild.name });
+            return message.reply({ embeds: [errorEmbed] });
+        }
+
+        const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
+        const jailRole = message.guild.roles.cache.find(
+            (role) => role.name === "cezalı"
+        );
+
+        if (!jailRole) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor("#ff0000")
+                .setDescription("<a:westina_red:1349419144243576974> Jail rolü bulunamadı!")
+                .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
 
         try {
-            const userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
-
-            if (!userData) {
-                const noDataEmbed = new EmbedBuilder()
-                    .setColor("#ffffff")
-                    .setTitle("Ceza Geçmişi")
-                    .setDescription(`${userTag} kullanıcısının herhangi bir ceza geçmişi bulunmamaktadır.`)
-                    .setFooter({ text: "made by westina <3" });
-                return message.reply({ embeds: [noDataEmbed] });
+            // Kullanıcının jail rolünü kontrol et
+            if (!user.roles.cache.has(jailRole.id)) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription("<a:westina_red:1349419144243576974> Bu kullanıcı hapiste değil!")
+                    .setFooter({ text: message.guild.name });
+                return message.reply({ embeds: [errorEmbed] });
             }
 
-            let penalties = [];
+            // Kullanıcının MongoDB verilerini al
+            const existingUser = await User.findOne({ userId: user.id });
+            if (!existingUser) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı veritabanında bulunamadı!")
+                    .setFooter({ text: message.guild.name });
+                return message.reply({ embeds: [errorEmbed] });
+            }
 
-            if (userData.bans) {
-                userData.bans.forEach(ban => {
-                    penalties.push({
-                        type: "<:ban:1323921155601469460> Yasaklama",
-                        timestamp: `<t:${Math.floor(new Date(ban.createdAt).getTime() / 1000)}:F>`,
-                        reason: ban.reason || "Sebep belirtilmemiş"
-                    });
+            // Kullanıcının önceki rollerini al
+            let previousRoles = existingUser.userRoles;
+
+            if (!previousRoles || previousRoles.length === 0) {
+                const warningEmbed = new EmbedBuilder()
+                    .setColor("#ff9900")
+                    .setDescription("<a:westina_warning:1349419144243576974> Kullanıcının önceki rollerini bulamadım!")
+                    .setFooter({ text: message.guild.name });
+                message.reply({ embeds: [warningEmbed] });
+            } else {
+                // "sponsor" rolünü yok saymak için kontrol et
+                previousRoles = previousRoles.filter(roleId => {
+                    const role = message.guild.roles.cache.get(roleId);
+                    return role && role.name !== "sponsor"; // "sponsor" rolü hariç
                 });
-            }
 
-            if (userData.mutes) {
-                userData.mutes.forEach(mute => {
-                    penalties.push({
-                        type: "<:mute:1350460510566350848> Susturma",
-                        timestamp: `<t:${Math.floor(new Date(mute.createdAt).getTime() / 1000)}:F>`,
-                        reason: mute.reason || "Sebep belirtilmemiş"
-                    });
-                });
-            }
-
-            if (userData.jails) {
-                userData.jails.forEach(jail => {
-                    penalties.push({
-                        type: "<:w_jail:1349478025170784278> Jail",
-                        timestamp: `<t:${Math.floor(new Date(jail.createdAt).getTime() / 1000)}:F>`,
-                        reason: jail.reason || "Sebep belirtilmemiş"
-                    });
-                });
-            }
-
-            if (penalties.length === 0) {
-                const noDataEmbed = new EmbedBuilder()
-                    .setColor("#ffffff")
-                    .setTitle("Ceza Geçmişi")
-                    .setDescription(`${userTag} kullanıcısının herhangi bir ceza geçmişi bulunmamaktadır.`)
-                    .setFooter({ text: "made by westina <3" });
-                return message.reply({ embeds: [noDataEmbed] });
-            }
-
-            // Tarihe göre sıralama (en eski en yukarıda olacak şekilde)
-            penalties.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            // Timeline oluşturma
-            let timelineDescription = "";
-            penalties.forEach((penalty, index) => {
-                timelineDescription += `**${penalty.type}**\n📅 ${penalty.timestamp}\n📌 **Sebep:** ${penalty.reason}\n`;
-                if (index !== penalties.length - 1) {
-                    timelineDescription += `\n⬇️\n`;
+                // Kullanıcının önceki rollerini geri ver
+                if (previousRoles.length > 0) {
+                    await user.roles.add(previousRoles);
                 }
+            }
+
+            // Jail rolünü kaldır
+            await user.roles.remove(jailRole);
+
+            // Jail kaydını veritabanından silme, sadece rolü kaldırıyoruz
+            existingUser.jails.push({
+                createdAt: new Date(),
+                reason: `Hapisten çıkarıldı: ${reason}`,
+                jailEndTime: new Date(),
+                moderatorId: message.author.id,
             });
 
+            await existingUser.save();
+
             const successEmbed = new EmbedBuilder()
-                .setColor("#ffffff")
-                .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Sicili")
-                .setDescription(`**${userTag}** kullanıcısının ceza geçmişi:\n\n${timelineDescription}`)
+                .setColor("#98ff98")
+                .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Hapisten Çıkarıldı")
+                .setDescription(`**${user.user.tag}** kullanıcısı hapisten çıkarıldı.`)
+                .addFields(
+                    {
+                        name: "👮 Moderatör",
+                        value: message.author.tag,
+                        inline: true,
+                    },
+                    { name: "📝 Sebep", value: reason },
+                )
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
 
             message.reply({ embeds: [successEmbed] });
+            logger.log(
+                message.guild,
+                "UNJAIL",
+                message.author,
+                user.user,
+                reason,
+            );
         } catch (error) {
+            console.error("Unjail hatası:", error);
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")
-                .setDescription("<a:westina_red:1349419144243576974> Ceza geçmişi çekilirken bir hata oluştu!")
+                .setColor("#ff0000")
+                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapisten çıkarılırken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
-            console.error("Sicil komutu hatası:", error);
         }
     },
 };
