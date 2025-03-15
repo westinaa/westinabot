@@ -16,8 +16,12 @@ module.exports = {
         }
 
         const restartEmbed = new EmbedBuilder()
-            .setColor("#00ff00")
-            .setDescription("🔄 Bot yeniden başlatılıyor...")
+            .setColor("#ffffff")
+            .setAuthor({
+                name: message.client.user.username,  // Botun ismi
+                iconURL: message.client.user.displayAvatarURL()  // Botun profil resmi
+            })
+            .setDescription("<a:aku_loading:1349419105622691911> Tüm komutları kaydedip sistemi tekrar başlatıyorum. \n<:seta:1346909730173354054> Bu işlem \`~ 1dk\` sürecektir.")
             .setFooter({ text: message.guild.name })
             .setTimestamp();
 
