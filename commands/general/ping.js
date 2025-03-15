@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+const https = require('node:https');
+const { URL } = require('node:url');
 
 module.exports = {
     name: 'ping',
@@ -15,21 +16,38 @@ module.exports = {
 
         let uptimeLatency = 'Ölçülüyor...';
         let uptimeStatus = '';
-
         const startTime = Date.now();
+
         try {
-            const response = await fetch(renderURL);
-            const endTime = Date.now();
-            uptimeLatency = endTime - startTime;
-            uptimeStatus = response.ok ? '<a:yellow_verify:1346909656685084745>' : '⚠️';
+            const parsedURL = new URL(renderURL);
+            const options = {
+                method: 'GET'
+            };
+
+            const req = https.request(parsedURL, options, (res) => {
+                const endTime = Date.now();
+                uptimeLatency = endTime - startTime;
+                uptimeStatus = (res.statusCode >= 200 && res.statusCode < 300) ? '<a:yellow_verify:1346909656685084745>' : '⚠️';
+                const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping (${renderURL}):** ${uptimeStatus} ${uptimeLatency}ms (HTTP ${res.statusCode})`;
+                initialMessage.edit(finalMessage).catch(console.error);
+            });
+
+            req.on('error', (error) => {
+                const endTime = Date.now();
+                uptimeLatency = endTime - startTime;
+                uptimeStatus = '❌';
+                console.error('Render uptime ping hatası:', error);
+                const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping (${renderURL}):** ${uptimeStatus} Hata (${uptimeLatency}ms)`;
+                initialMessage.edit(finalMessage).catch(console.error);
+            });
+
+            req.end(); // İsteği sonlandır
         } catch (error) {
-            console.error('Render uptime ping hatası:', error);
+            console.error('URL ayrıştırma hatası:', error);
             uptimeLatency = 'Hata';
             uptimeStatus = '❌';
+            const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping (${renderURL}):** ${uptimeStatus} Hata`;
+            initialMessage.edit(finalMessage).catch(console.error);
         }
-
-        const finalMessage = `${pingEmoji} **Gecikme:** ${botPing}ms\n${apiEmoji} **API Gecikmesi:** ${apiPing}ms\n${uptimeEmoji} **Render Ping (${renderURL}):** ${uptimeStatus} ${uptimeLatency}ms`;
-
-        await initialMessage.edit(finalMessage);
     },
 };
