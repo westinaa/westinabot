@@ -339,6 +339,6 @@ if (!token) {
     process.exit(1);
 }
 
-client.login(process.env.TOKEN || config.token);.catch((error) => {
+client.login(process.env.TOKEN || config.token).catch((error) => {
     console.error("Bot başlatılırken hata oluştu:", error);
 });
