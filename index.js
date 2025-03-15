@@ -15,7 +15,6 @@ const guard = require("./utils/guard.js");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-require('dotenv').config(); // .env dosyasını yükle
 
 async function connectToDB() {
     const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
