@@ -8,18 +8,14 @@ module.exports = {
   async execute(message, args) {
     if (!args[0]) return message.reply('Lütfen istatistiklerini görmek istediğiniz kullanıcıyı belirtin.');
     
-    // Kullanıcı belirleme
     const user = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
-    
-    // Kullanıcı ID kontrolü
-    console.log(`Kullanıcı ID: ${user ? user.id : 'Bulunamadı'}`);
-
     if (!user) return message.reply('Geçerli bir kullanıcı bulunamadı.');
+
+    console.log(`Kullanıcı ID: ${user.id}`);
 
     let timePeriod = args[1] ? args[1].toLowerCase() : null;
     let timeLimit = null;
 
-    // Zaman dilimi kontrolü
     if (timePeriod) {
       const days = parseInt(timePeriod);
       if (days && days > 0) {
@@ -29,32 +25,40 @@ module.exports = {
       }
     }
 
-    // Kullanıcı verilerini MongoDB'den al
-    const userStats = await UserStats.findOne({ userId: user.id });
+    const userStats = await UserStats.findOne({ userId: user.id }).lean();
+
+    console.log(`Veri çekildi:`, userStats);
 
     if (!userStats) {
+      return message.reply('Bu kullanıcıya ait istatistik bulunamadı.');
+    }
+
+    const messages = userStats.messages || {};
+    const voiceStats = userStats.voiceStats || [];
+
+    console.log(`Mesajlar:`, messages);
+    console.log(`Sesli verileri:`, voiceStats);
+
+    if (Object.keys(messages).length === 0 && voiceStats.length === 0) {
       return message.reply('Bu kullanıcıya ait istatistik bulunamadı.');
     }
 
     let totalVoiceTime = 0;
     let channelMessages = {};
 
-    // Sesli kanal verisini ve mesaj sayılarını hesapla
-    userStats.voiceStats.forEach(voiceStat => {
+    voiceStats.forEach(voiceStat => {
       if (!timeLimit || voiceStat.joinTime >= timeLimit) {
-        totalVoiceTime += voiceStat.totalTime;  // Toplam sesli kanal süresi
+        totalVoiceTime += voiceStat.totalTime;
       }
     });
 
-    // Mesaj sayılarını filtrele
-    userStats.messages.forEach((count, channelId) => {
+    Object.entries(messages).forEach(([channelId, count]) => {
       if (!timeLimit || new Date(channelId) >= timeLimit) {
-        channelMessages[channelId] = count;  // Her kanal için mesaj sayısı
+        channelMessages[channelId] = count;
       }
     });
 
-    // Sonuçları yanıt olarak gönder
-    const formattedVoiceTime = moment.duration(totalVoiceTime, 'seconds').humanize();  // Sesli kanal süresi formatlama
+    const formattedVoiceTime = moment.duration(totalVoiceTime, 'seconds').humanize();
     const messageStats = Object.entries(channelMessages)
       .map(([channelId, count]) => `<#${channelId}>: ${count} mesaj`)
       .join('\n');
