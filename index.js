@@ -26,8 +26,6 @@ async function connectToDB() {
 
     try {
         await mongoose.connect(dbURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
             serverSelectionTimeoutMS: 5000, // Bağlantı zaman aşımı süresi (ms)
             bufferCommands: false, // Buffering'i kapat
             ssl: true, 
