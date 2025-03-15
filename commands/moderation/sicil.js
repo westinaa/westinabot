@@ -71,7 +71,7 @@ module.exports = {
         }).join('\n');
 
         return new EmbedBuilder()
-          .setTitle(`${user.tag} Kullanıcı Sicili`)
+          .setTitle(`${user.username} Kullanıcı Sicili`)
           .setDescription(punishmentList || 'Bu sayfada ceza yok.')
           .setColor('#ffffff')
           .setFooter({ text: `Sayfa ${page + 1}/${Math.ceil(allPunishments.length / perPage)}` });
