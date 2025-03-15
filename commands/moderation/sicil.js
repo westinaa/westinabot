@@ -1,104 +1,123 @@
 const { permissions } = require("../../utils/permissions.js");
 const { EmbedBuilder } = require("discord.js");
-const UserModel = require("../../models/userModel.js"); // UserModel'i dahil ediyoruz (Ban, Mute, Jail için)
+const UserModel = require("../../models/userModel.js");
 
 module.exports = {
     name: "sicil",
     description: "Kullanıcının tüm ceza geçmişini gösterir",
     async execute(message, args) {
-        // Sadece moderatörlerin komut kullanabilmesini sağla
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")  // Rengi beyaz yaptım
+                .setColor("#ffffff")
                 .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
 
         let user;
-        let userTag = ''; // Kullanıcı etiketi
+        let userTag = '';
 
-        // 1. ID veya etiket kontrolü
         if (message.mentions.users.size > 0) {
-            user = message.mentions.users.first(); // Etiketlenen kullanıcıyı al
+            user = message.mentions.users.first();
             userTag = `<@${user.id}>`;
         } else if (args[0]) {
-            // ID üzerinden kullanıcı araması
             const userId = args[0];
             user = await message.guild.members.fetch(userId).catch(() => null);
             if (user) userTag = `<@${user.id}>`;
         } else {
-            // Eğer kullanıcı ne etiketlenmiş ne de ID verilmişse, komutla ilgili işlem yapmayalım.
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")  // Rengi beyaz yaptım
+                .setColor("#ffffff")
                 .setTitle("Eksik argüman!")
                 .setDescription("<a:westina_red:1349419144243576974> Kullanıcının ID'sini girmelisiniz ya da etiketlemelisiniz!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        // Kullanıcı bulunamazsa hata mesajı ver
         if (!user) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")  // Rengi beyaz yaptım
+                .setColor("#ffffff")
                 .setTitle("Geçersiz kullanıcı!")
                 .setDescription("<a:westina_red:1349419144243576974> Bu ID veya etiket ile bir kullanıcı bulunamadı!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
         }
 
-        // Veritabanından ceza geçmişini çekme
         try {
-            // UserModel üzerinden ban, mute ve jail verilerini çekiyoruz
             const userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
 
             if (!userData) {
                 const noDataEmbed = new EmbedBuilder()
-                    .setColor("#ffffff")  // Rengi beyaz yaptım
+                    .setColor("#ffffff")
                     .setTitle("Ceza Geçmişi")
                     .setDescription(`${userTag} kullanıcısının herhangi bir ceza geçmişi bulunmamaktadır.`)
                     .setFooter({ text: "made by westina <3" });
                 return message.reply({ embeds: [noDataEmbed] });
             }
 
-            // Ceza geçmişini Embed formatında oluşturma
-            let embedDescription = `**${userTag}** kullanıcısının ceza geçmişi:\n\n`;
+            let penalties = [];
 
-            // Yasaklamalar (Banlar)
-            if (userData.bans && userData.bans.length > 0) {
-                embedDescription += `**Yasaklamalar:**\n`;
+            if (userData.bans) {
                 userData.bans.forEach(ban => {
-                    embedDescription += `- Yasaklanma Tarihi: ${ban.createdAt.toDateString()}\nSebep: ${ban.reason || 'Sebep belirtilmemiş'}\n\n`;
+                    penalties.push({
+                        type: "⛔ Yasaklama",
+                        timestamp: `<t:${Math.floor(new Date(ban.createdAt).getTime() / 1000)}:F>`,
+                        reason: ban.reason || "Sebep belirtilmemiş"
+                    });
                 });
             }
 
-            // Mute ve Jail verileri
-            if (userData.mutes && userData.mutes.length > 0) {
-                embedDescription += `**Mutele Alınmalar:**\n`;
+            if (userData.mutes) {
                 userData.mutes.forEach(mute => {
-                    embedDescription += `- Mute Tarihi: ${mute.createdAt.toDateString()}\nSebep: ${mute.reason || 'Sebep belirtilmemiş'}\n\n`;
+                    penalties.push({
+                        type: "🔇 Susturma",
+                        timestamp: `<t:${Math.floor(new Date(mute.createdAt).getTime() / 1000)}:F>`,
+                        reason: mute.reason || "Sebep belirtilmemiş"
+                    });
                 });
             }
 
-            if (userData.jails && userData.jails.length > 0) {
-                embedDescription += `**Jail Uygulamaları:**\n`;
+            if (userData.jails) {
                 userData.jails.forEach(jail => {
-                    embedDescription += `- Jail Uygulama Tarihi: ${jail.createdAt.toDateString()}\nSebep: ${jail.reason || 'Sebep belirtilmemiş'}\n\n`;
+                    penalties.push({
+                        type: "🚔 Jail",
+                        timestamp: `<t:${Math.floor(new Date(jail.createdAt).getTime() / 1000)}:F>`,
+                        reason: jail.reason || "Sebep belirtilmemiş"
+                    });
                 });
             }
 
-            // Sicil Embed
+            if (penalties.length === 0) {
+                const noDataEmbed = new EmbedBuilder()
+                    .setColor("#ffffff")
+                    .setTitle("Ceza Geçmişi")
+                    .setDescription(`${userTag} kullanıcısının herhangi bir ceza geçmişi bulunmamaktadır.`)
+                    .setFooter({ text: "made by westina <3" });
+                return message.reply({ embeds: [noDataEmbed] });
+            }
+
+            // Tarihe göre sıralama (en eski en yukarıda olacak şekilde)
+            penalties.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            // Timeline oluşturma
+            let timelineDescription = "";
+            penalties.forEach((penalty, index) => {
+                timelineDescription += `**${penalty.type}**\n📅 ${penalty.timestamp}\n📌 **Sebep:** ${penalty.reason}\n`;
+                if (index !== penalties.length - 1) {
+                    timelineDescription += `\n⬇️\n`;
+                }
+            });
+
             const successEmbed = new EmbedBuilder()
-                .setColor("#ffffff")  // Rengi beyaz yaptım
+                .setColor("#ffffff")
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Sicili")
-                .setDescription(embedDescription)
+                .setDescription(`**${userTag}** kullanıcısının ceza geçmişi:\n\n${timelineDescription}`)
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
 
             message.reply({ embeds: [successEmbed] });
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ffffff")  // Rengi beyaz yaptım
+                .setColor("#ffffff")
                 .setDescription("<a:westina_red:1349419144243576974> Ceza geçmişi çekilirken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
