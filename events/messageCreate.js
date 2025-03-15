@@ -1,4 +1,4 @@
-const UserStats = require('../../models/userStats');
+const UserStats = require('../models/userStats'); // models klasörüne göre doğru yol
 
 module.exports = {
   name: 'messageCreate',
