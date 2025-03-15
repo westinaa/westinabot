@@ -16,4 +16,18 @@ const userSchema = new mongoose.Schema({
     },
     reason: {
         type: String,
-        default: "Sebep b
+        default: "Sebep belirtilmedi",
+    },
+    moderatorId: {
+        type: String,
+        required: true,
+    },
+    roles: {
+        type: [String],  // Kullanıcının geçici olarak alacağı roller
+        default: [],
+    },
+}, { timestamps: true });  // Kullanıcı cezalandırma işleminin zamanını kaydeder.
+
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
