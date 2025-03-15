@@ -17,6 +17,7 @@ module.exports = {
 
         // Kullanıcıyı etiketleme veya ID ile alma
         let user = message.mentions.users.first();
+        let userTag = '';
         if (!user) {
             const userId = args[0];
             if (!userId) {
@@ -36,6 +37,11 @@ module.exports = {
                     .setFooter({ text: "made by westina <3" });
                 return message.reply({ embeds: [errorEmbed] });
             }
+            // Eğer ID kullanıldıysa, kullanıcı etiketini <@ID> şeklinde alırız.
+            userTag = `<@${user.id}>`;
+        } else {
+            // Eğer etiketle kullanıcı bulunduysa, tag'ini alıyoruz.
+            userTag = `<@${user.id}>`;  // Burada userTag'i direkt etiket ID formatında alıyoruz
         }
 
         const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
@@ -58,7 +64,7 @@ module.exports = {
                 .setColor("#00ff00")
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Yasaklandı")
                 .setDescription(
-                    `**${user.tag}** kullanıcısı başarıyla yasaklandı.`
+                    `**${userTag}** kullanıcısı başarıyla yasaklandı.` // userTag kullanarak ismi veya etiket ID'sini gösteriyoruz
                 )
                 .addFields(
                     {
@@ -76,9 +82,4 @@ module.exports = {
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("<a:westina_red:1349419144243576974> Kullanıcı yasaklanırken bir hata oluştu!")
-                .setFooter({ text: message.guild.name });
-            message.reply({ embeds: [errorEmbed] });
-        }
-    },
-};
+                .setDescrip
