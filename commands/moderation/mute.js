@@ -1,5 +1,5 @@
 const { permissions } = require("../../utils/permissions.js");
-const { EmbedBuilder, MessageActionRow, MessageButton } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
 const User = require("../../models/userModel.js");
 const ms = require("ms"); // Süreyi işlemek için ms modülünü kullanıyoruz.
 
@@ -36,12 +36,12 @@ module.exports = {
         }
 
         // Butonlar ekle
-        const row = new MessageActionRow().addComponents(
-            new MessageButton()
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
                 .setCustomId("writtenMute")
                 .setLabel("Yazılı Mute")
                 .setStyle("PRIMARY"),
-            new MessageButton()
+            new ButtonBuilder()
                 .setCustomId("voiceMute")
                 .setLabel("Sesli Mute")
                 .setStyle("PRIMARY")
