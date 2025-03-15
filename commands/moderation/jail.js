@@ -3,7 +3,7 @@ const logger = require("../../utils/logger.js");
 const config = require("../../config.js");
 const { EmbedBuilder } = require("discord.js");
 const mongoose = require("mongoose");
-const userModel = require("../../models/userModel"); // MongoDB şeması
+const userModel = require("../../models/userModel.js"); // MongoDB şeması
 
 module.exports = {
     name: "jail",
