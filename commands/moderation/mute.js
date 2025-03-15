@@ -62,9 +62,26 @@ module.exports = {
         collector.on("collect", async (interaction) => {
             if (interaction.customId === "writtenMute") {
                 // Yazılı mute
-                await user.roles.add("MutedRoleId");  // "Muted" rolünü ekle
-                await user.timeout(ms(time), reason); // Belirtilen süre boyunca yazılı mute uygula
-                
+                const mutedRole = message.guild.roles.cache.find(role => role.name === "Muted"); // "Muted" rolünü bul
+                if (!mutedRole) {
+                    const errorEmbed = new EmbedBuilder()
+                        .setColor("#ff0000")
+                        .setDescription("<a:westina_red:1349419144243576974> 'Muted' rolü bulunamadı!")
+                        .setFooter({ text: message.guild.name });
+                    return message.reply({ embeds: [errorEmbed] });
+                }
+
+                await user.roles.add(mutedRole); // "Muted" rolünü ekle
+
+                // Metin kanallarında yazma engelle
+                user.permissions.remove("SEND_MESSAGES"); // Metin kanalında yazmayı engelle
+
+                // Yazılı mute için süreyi başlat
+                setTimeout(async () => {
+                    await user.roles.remove(mutedRole); // Süre dolduğunda "Muted" rolünü kaldır
+                    user.permissions.add("SEND_MESSAGES"); // Yazma izni ver
+                }, ms(time));
+
                 const successEmbed = new EmbedBuilder()
                     .setColor("#98ff98")
                     .setTitle("🔇 Yazılı Mute Uygulandı")
