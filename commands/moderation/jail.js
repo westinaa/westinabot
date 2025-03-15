@@ -37,9 +37,6 @@ module.exports = {
 
         const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
-            // Kullanıcının mevcut rollerini kaydet
-            const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id && r.name !== "sponsor").map(r => r.id);  // "sponsor" rolünü filtrele
-
         // Jail rolünü kontrol et veya oluştur
         let jailRole = message.guild.roles.cache.find(role => role.name === "cezalı");
         if (!jailRole) {
@@ -60,6 +57,7 @@ module.exports = {
                     });
                 });
             } catch (error) {
+                console.error("Jail rolü oluşturulurken hata:", error);
                 const errorEmbed = new EmbedBuilder()
                     .setColor("#ff0000")
                     .setDescription("<a:westina_red:1349419144243576974> Jail rolü oluşturulurken bir hata oluştu!")
@@ -69,6 +67,8 @@ module.exports = {
         }
 
         try {
+            // Kullanıcının mevcut rollerini kaydet
+            const userRoles = user.roles.cache.filter(r => r.id !== message.guild.id && r.name !== "sponsor").map(r => r.id);  // "sponsor" rolünü filtrele
 
             // "Sponsor" rolü varsa, bu rolü kaldırma
             const sponsorRole = user.roles.cache.find(r => r.name === "sponsor");
@@ -94,59 +94,60 @@ module.exports = {
             });
 
             await jailData.save();
-
-            const successEmbed = new EmbedBuilder()
-                .setColor("#1e1e1e")
-                .setTitle("🔒 Kullanıcı Hapse Atıldı")
-                .setDescription(`**${user.user.tag}** kullanıcısı hapse atıldı.`)
-                .addFields(
-                    { name: "👮 Moderatör", value: message.author.tag, inline: true },
-                    { name: "⏱️ Süre", value: `${duration} saat`, inline: true },
-                    { name: "📝 Sebep", value: reason }
-                )
-                .setTimestamp()
-                .setFooter({ text: "made by westina <3" });
-
-            message.reply({ embeds: [successEmbed] });
-            logger.log(message.guild, "JAIL", message.author, user.user, `${duration} saat - ${reason}`);
-
-            // Süre sonunda jail'den çıkar
-            setTimeout(async () => {
-                try {
-                    // MongoDB'den kullanıcıyı bul ve jail durumunu kaldır
-                    const jailRecord = await userModel.findOne({ userId: user.id, guildId: message.guild.id });
-                    if (jailRecord) {
-                        await user.roles.remove(jailRole);
-                        await user.roles.add(userRoles);  // Sponsor rolü olmadığı için geri ekleme yapmıyoruz
-
-                        const releaseEmbed = new EmbedBuilder()
-                            .setColor("#00ff00")
-                            .setTitle("🔓 Kullanıcı Serbest Bırakıldı")
-                            .setDescription(`**${user.user.tag}** kullanıcısının hapis süresi doldu.`)
-                            .setTimestamp()
-                            .setFooter({ text: "made by westina <3" });
-
-                        message.channel.send({ embeds: [releaseEmbed] });
-                        logger.log(message.guild, "UNJAIL", message.client.user, user.user, "Süre doldu");
-
-                        // MongoDB kaydını sil
-                        await userModel.deleteOne({ userId: user.id, guildId: message.guild.id });
-                    }
-                } catch (error) {
-                    const errorEmbed = new EmbedBuilder()
-                        .setColor("#ff0000")
-                        .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapisten çıkarılırken bir hata oluştu!")
-                        .setFooter({ text: message.guild.name });
-                    message.channel.send({ embeds: [errorEmbed] });
-                }
-            }, duration * 3600000); // Saati milisaniyeye çevir
-
         } catch (error) {
+            console.error("Kullanıcı hapse atılırken bir hata oluştu:", error);
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
                 .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapse atılırken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
-            message.reply({ embeds: [errorEmbed] });
+            return message.reply({ embeds: [errorEmbed] });
         }
+
+        const successEmbed = new EmbedBuilder()
+            .setColor("#1e1e1e")
+            .setTitle("🔒 Kullanıcı Hapse Atıldı")
+            .setDescription(`**${user.user.tag}** kullanıcısı hapse atıldı.`)
+            .addFields(
+                { name: "👮 Moderatör", value: message.author.tag, inline: true },
+                { name: "⏱️ Süre", value: `${duration} saat`, inline: true },
+                { name: "📝 Sebep", value: reason }
+            )
+            .setTimestamp()
+            .setFooter({ text: "made by westina <3" });
+
+        message.reply({ embeds: [successEmbed] });
+        logger.log(message.guild, "JAIL", message.author, user.user, `${duration} saat - ${reason}`);
+
+        // Süre sonunda jail'den çıkar
+        setTimeout(async () => {
+            try {
+                // MongoDB'den kullanıcıyı bul ve jail durumunu kaldır
+                const jailRecord = await userModel.findOne({ userId: user.id, guildId: message.guild.id });
+                if (jailRecord) {
+                    await user.roles.remove(jailRole);
+                    await user.roles.add(userRoles);  // Sponsor rolü olmadığı için geri ekleme yapmıyoruz
+
+                    const releaseEmbed = new EmbedBuilder()
+                        .setColor("#00ff00")
+                        .setTitle("🔓 Kullanıcı Serbest Bırakıldı")
+                        .setDescription(`**${user.user.tag}** kullanıcısının hapis süresi doldu.`)
+                        .setTimestamp()
+                        .setFooter({ text: "made by westina <3" });
+
+                    message.channel.send({ embeds: [releaseEmbed] });
+                    logger.log(message.guild, "UNJAIL", message.client.user, user.user, "Süre doldu");
+
+                    // MongoDB kaydını sil
+                    await userModel.deleteOne({ userId: user.id, guildId: message.guild.id });
+                }
+            } catch (error) {
+                console.error("Kullanıcı hapisten çıkarılırken bir hata oluştu:", error);
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı hapisten çıkarılırken bir hata oluştu!")
+                    .setFooter({ text: message.guild.name });
+                message.channel.send({ embeds: [errorEmbed] });
+            }
+        }, duration * 3600000); // Saati milisaniyeye çevir
     },
 };
