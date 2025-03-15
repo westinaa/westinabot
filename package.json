@@ -14,6 +14,13 @@
     "express": "^4.21.2",
     "mongodb": "^5.0.1",
     "mongoose": "^5.13.15",
-    "pm2": "^5.4.3"
+    "pm2": "^5.4.3",
+    "sodium-native": "^3.3.0",
+    "sodium": "^3.0.2",
+    "@stablelib/xchacha20poly1305": "^2.0.0",
+    "@noble/ciphers": ^1.0.0,
+    "libsodium-wrappers": "^0.7.9",
+    "@discordjs/opus": "^0.4.0",
+    "opusscript": "^0.0.7"
   }
 }
