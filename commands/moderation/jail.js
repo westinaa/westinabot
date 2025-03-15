@@ -86,17 +86,30 @@ module.exports = {
                 await user.roles.add(jailRole);
             }
 
-            // Süresiz olarak hapse atıldığını MongoDB'ye kaydediyoruz
-            const jailData = {
-                userId: user.id,
-                guildId: message.guild.id,
-                jailEndTime: null, // Süresiz olduğundan sonlanma zamanı yok
-                reason: reason,
-                moderatorId: message.author.id,
-            };
+            // MongoDB'de mevcut kullanıcıyı kontrol et
+            const existingUser = await User.findOne({ userId: user.id });
 
-            // MongoDB'ye kullanıcıyı kaydet
-            await new User(jailData).save();
+            if (existingUser) {
+                // Eğer kullanıcı zaten cezalıysa, sadece güncelle
+                await User.updateOne(
+                    { userId: user.id },  // Hangi kullanıcıyı güncellemek istediğimizi belirtiyoruz
+                    { $set: { jailEndTime: null, reason: reason, moderatorId: message.author.id } }  // Güncellemek istediğimiz veriler
+                );
+                console.log("Kullanıcı güncellendi");
+            } else {
+                // Eğer kullanıcı veritabanında yoksa, yeni bir kayıt ekle
+                const jailData = {
+                    userId: user.id,
+                    guildId: message.guild.id,
+                    jailEndTime: null, // Süresiz olduğundan sonlanma zamanı yok
+                    reason: reason,
+                    moderatorId: message.author.id,
+                };
+
+                // MongoDB'ye kullanıcıyı kaydet
+                await new User(jailData).save();
+                console.log("Yeni kullanıcı cezalı olarak kaydedildi");
+            }
         } catch (error) {
             console.error("Kullanıcı hapse atılırken bir hata oluştu:", error);
             const errorEmbed = new EmbedBuilder()
