@@ -105,6 +105,10 @@ client.once("ready", async () => {
         });
     }, 5000);
 
+    // Botun aktif olma zamanı
+    const botStartTime = Math.floor(client.readyTimestamp / 1000);  // Unix timestamp'ı saniye cinsinden alıyoruz
+    const activeTime = `<t:${botStartTime}:R>`; // Botun aktif olduğu zamanı timeline formatında
+
     // Log kanal ID'sini belirle
     const LOG_CHANNEL_ID = "1350464454252560454"; 
 
@@ -112,12 +116,13 @@ client.once("ready", async () => {
         // Kanalı bul ve mesaj gönder
         const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
         if (logChannel) {
-            await logChannel.send("> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**");
+            await logChannel.send(`> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**\n\nBot aktif olma zamanı: ${activeTime}`);
         }
     } catch (error) {
         console.error("Kanal bulunamadı ya da mesaj gönderilemedi: ", error);
     }
 });
+
 
 
 // AntiLink sistemini dahil et
