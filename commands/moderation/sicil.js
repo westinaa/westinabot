@@ -59,7 +59,7 @@ module.exports = {
             if (userData.bans) {
                 userData.bans.forEach(ban => {
                     penalties.push({
-                        type: "⛔ Yasaklama",
+                        type: "<:ban:1323921155601469460> Yasaklama",
                         timestamp: `<t:${Math.floor(new Date(ban.createdAt).getTime() / 1000)}:F>`,
                         reason: ban.reason || "Sebep belirtilmemiş"
                     });
@@ -69,7 +69,7 @@ module.exports = {
             if (userData.mutes) {
                 userData.mutes.forEach(mute => {
                     penalties.push({
-                        type: "🔇 Susturma",
+                        type: "<:mute:1350460510566350848> Susturma",
                         timestamp: `<t:${Math.floor(new Date(mute.createdAt).getTime() / 1000)}:F>`,
                         reason: mute.reason || "Sebep belirtilmemiş"
                     });
@@ -79,7 +79,7 @@ module.exports = {
             if (userData.jails) {
                 userData.jails.forEach(jail => {
                     penalties.push({
-                        type: "🚔 Jail",
+                        type: "<:w_jail:1349478025170784278> Jail",
                         timestamp: `<t:${Math.floor(new Date(jail.createdAt).getTime() / 1000)}:F>`,
                         reason: jail.reason || "Sebep belirtilmemiş"
                     });
