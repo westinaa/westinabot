@@ -9,7 +9,7 @@ module.exports = {
         // Sayıları emojiye çeviren fonksiyon
         function numberToEmoji(number) {
             const emojiNumbers = {
-                '0': '0️⃣',
+                '0': '<a:w0:1349513675404476537>',
                 '1': '<a:w1:1349513708669374587>',
                 '2': '<a:w2:1349513703854182452>',
                 '3': '<a:w3:1349513701065232404>',
