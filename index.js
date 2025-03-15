@@ -114,7 +114,7 @@ const delay = currentTime - client.readyTimestamp;  // Gecikme süresi (ms)
 try {
     const user = await client.users.fetch("474006896408264712");  // Kendi Discord ID'm (botun mesajı kime atmasını istiyorsam onun idsini koyabiliriz)
     if (user) {
-        await user.send(`> <:online:1349504905374863484> Giriş Başarılı! \n \n**Shards, commands, utils, events ve MongoDB başarıyla aktif edildi!** <:w_tik:1350471905856978976>\n\n<:stack:1345875393961398282> Bot aktif olma zamanı: ${activeTime}\n\nBotun aktif olmasından mesajın gönderilmesine kadar geçen süre: ${delay} ms`);
+        await user.send(`> <:online:1349504905374863484> Giriş Başarılı! \n \n**Shards, commands, utils, events ve MongoDB başarıyla aktif edildi!** <:w_tik:1350471905856978976>\n\n<:stack:1345875393961398282> Bot aktif olma zamanı: ${activeTime}\n\n<:ping:1349482682853359667> Botun aktif olmasından mesajın gönderilmesine kadar geçen süre: \` ${delay} ms \``);
     }
 } catch (error) {
     console.error("DM gönderilemedi: ", error);
