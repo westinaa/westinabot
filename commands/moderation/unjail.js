@@ -47,9 +47,6 @@ module.exports = {
                 return message.reply({ embeds: [errorEmbed] });
             }
 
-            // Jail rolünü kaldır
-            await user.roles.remove(jailRole);
-
             // MongoDB veritabanında kullanıcıyı bul ve önceki rollerini al
             const userRecord = await User.findOne({ userId: user.id, guildId: message.guild.id });
             if (!userRecord) {
@@ -71,6 +68,9 @@ module.exports = {
                     .setFooter({ text: message.guild.name });
                 message.reply({ embeds: [warningEmbed] });
             }
+
+            // Jail rolünü kaldır
+            await user.roles.remove(jailRole);
 
             // MongoDB kaydını sil
             await User.deleteOne({ userId: user.id, guildId: message.guild.id });
