@@ -6,7 +6,7 @@ module.exports = {
     execute(client) {
         console.log(`${client.user.tag} başarıyla giriş yaptı!`); // Konsola mesaj
 
-        const channelId = "KANAL_ID"; // Buraya mesajın gideceği kanalın ID'sini yaz
+        const channelId = "1350464454252560454"; // Buraya mesajın gideceği kanalın ID'sini yaz
         const channel = client.channels.cache.get(channelId);
 
         if (channel) {
