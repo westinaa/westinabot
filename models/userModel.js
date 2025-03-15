@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     userId: { type: String, required: true },  // Kullanıcı ID'si
     guildId: { type: String, required: true }, // Sunucu ID'si
+    username: { type: String, required: true }, // Yeni alan: Kullanıcı adı
     mutes: [
         {
             createdAt: { type: Date, default: Date.now },  // Mute tarihi
