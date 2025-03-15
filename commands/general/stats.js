@@ -8,7 +8,12 @@ module.exports = {
   async execute(message, args) {
     if (!args[0]) return message.reply('Lütfen istatistiklerini görmek istediğiniz kullanıcıyı belirtin.');
     
+    // Kullanıcı belirleme
     const user = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+    
+    // Kullanıcı ID kontrolü
+    console.log(`Kullanıcı ID: ${user ? user.id : 'Bulunamadı'}`);
+
     if (!user) return message.reply('Geçerli bir kullanıcı bulunamadı.');
 
     let timePeriod = args[1] ? args[1].toLowerCase() : null;
@@ -49,7 +54,7 @@ module.exports = {
     });
 
     // Sonuçları yanıt olarak gönder
-    const formattedVoiceTime = moment.duration(totalVoiceTime).humanize();  // Sesli kanal süresi formatlama
+    const formattedVoiceTime = moment.duration(totalVoiceTime, 'seconds').humanize();  // Sesli kanal süresi formatlama
     const messageStats = Object.entries(channelMessages)
       .map(([channelId, count]) => `<#${channelId}>: ${count} mesaj`)
       .join('\n');
