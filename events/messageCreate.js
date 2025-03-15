@@ -3,6 +3,9 @@ const UserStats = require('../models/userStats.js'); // models klasörüne göre
 module.exports = {
   name: 'messageCreate',
   async execute(message) {
+    // message objesinin undefined olmaması için kontrol ekleyelim
+    if (!message || !message.author) return;
+
     if (message.author.bot) return; // Botların mesajlarını sayma
 
     // Kullanıcı verisini MongoDB'den al
