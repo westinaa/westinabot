@@ -1,77 +1,67 @@
 const { MessageEmbed } = require('discord.js');
-const UserStats = require('../../models/userStats.js');
-const moment = require('moment');
+const UserStats = require('../models/userStats'); // MongoDB modelini import et
+const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
   name: 'stats',
-  description: 'Bir kullanıcının mesaj ve sesli kanal istatistiklerini gösterir.',
+  description: 'Kullanıcı istatistiklerini gösterir ve sunucuyu sıralar.',
   async execute(message, args) {
-    if (!args[0]) return message.reply('Lütfen istatistiklerini görmek istediğiniz kullanıcıyı belirtin.');
+    const guild = message.guild;
     
-    const user = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
-    if (!user) return message.reply('Geçerli bir kullanıcı bulunamadı.');
-
-    console.log(`Kullanıcı ID: ${user.id}`);
-
-    let timePeriod = args[1] ? args[1].toLowerCase() : null;
-    let timeLimit = null;
-
-    if (timePeriod) {
-      const days = parseInt(timePeriod);
-      if (days && days > 0) {
-        timeLimit = moment().subtract(days, 'days').toDate();
-      } else {
-        return message.reply('Geçersiz zaman dilimi girdiniz. Lütfen geçerli bir zaman dilimi belirtin (örnek: 1g, 7g, 10g).');
+    // Kullanıcı belirtilmişse, belirtilen kullanıcıyı al
+    let user = message.mentions.users.first() || message.author;
+    
+    try {
+      // Kullanıcı verisini MongoDB'den al
+      const stats = await UserStats.findOne({ userId: user.id });
+      
+      if (!stats) {
+        return message.channel.send("Bu kullanıcıya ait istatistik bulunamadı.");
       }
+
+      // Kanal bazında mesaj sayısı
+      const userMessagesInChannel = stats.messages;
+      const totalMessagesInGuild = await UserStats.aggregate([
+        { $group: { _id: null, totalMessages: { $sum: "$messages" } } },
+      ]);
+
+      // Ses aktifliği
+      const userVoiceActivity = stats.voiceActivity;
+      const totalVoiceActivityInGuild = await UserStats.aggregate([
+        { $group: { _id: null, totalVoiceActivity: { $sum: "$voiceActivity" } } },
+      ]);
+
+      // Embed mesaj
+      const embed = new MessageEmbed()
+        .setTitle(`${user.username} İstatistikleri`)
+        .addField('Kanal Bazında Mesaj Sayısı:', userMessagesInChannel || 0)
+        .addField('Sunucudaki Toplam Mesaj Sayısı:', totalMessagesInGuild[0].totalMessages || 0)
+        .addField('Kanal Bazında Ses Aktifliği (saniye):', userVoiceActivity || 0)
+        .addField('Sunucudaki Toplam Ses Aktifliği (saniye):', totalVoiceActivityInGuild[0].totalVoiceActivity || 0)
+        .setColor('#00FF00');
+
+      message.channel.send({ embeds: [embed] });
+
+      // Sunucudaki en aktif kullanıcıları sıralama
+      const allUsersStats = await UserStats.find();
+      const sortedStats = allUsersStats.sort((a, b) => (b.messages + b.voiceActivity) - (a.messages + a.voiceActivity));
+
+      // Top 5 en aktif kullanıcılar
+      let leaderboard = '';
+      sortedStats.slice(0, 5).forEach((userStat, index) => {
+        leaderboard += `${index + 1}. <@${userStat.userId}> - Mesajlar: ${userStat.messages}, Ses Aktifliği: ${userStat.voiceActivity}s\n`;
+      });
+
+      // Sıralamayı gönder
+      const leaderboardEmbed = new MessageEmbed()
+        .setTitle('Sunucudaki En Aktif Kullanıcılar')
+        .setDescription(leaderboard)
+        .setColor('#FF0000');
+
+      message.channel.send({ embeds: [leaderboardEmbed] });
+    } catch (error) {
+      console.error(error);
+      message.channel.send("Bir hata oluştu.");
     }
-
-    const userStats = await UserStats.findOne({ userId: user.id }).lean();
-
-    console.log(`Veri çekildi:`, userStats);
-
-    if (!userStats) {
-      return message.reply('Bu kullanıcıya ait istatistik bulunamadı.');
-    }
-
-    const messages = userStats.messages || {};
-    const voiceStats = userStats.voiceStats || [];
-
-    console.log(`Mesajlar:`, messages);
-    console.log(`Sesli verileri:`, voiceStats);
-
-    if (Object.keys(messages).length === 0 && voiceStats.length === 0) {
-      return message.reply('Bu kullanıcıya ait istatistik bulunamadı.');
-    }
-
-    let totalVoiceTime = 0;
-    let channelMessages = {};
-
-    voiceStats.forEach(voiceStat => {
-      if (!timeLimit || voiceStat.joinTime >= timeLimit) {
-        totalVoiceTime += voiceStat.totalTime;
-      }
-    });
-
-    Object.entries(messages).forEach(([channelId, count]) => {
-      if (!timeLimit || new Date(channelId) >= timeLimit) {
-        channelMessages[channelId] = count;
-      }
-    });
-
-    const formattedVoiceTime = moment.duration(totalVoiceTime, 'seconds').humanize();
-    const messageStats = Object.entries(channelMessages)
-      .map(([channelId, count]) => `<#${channelId}>: ${count} mesaj`)
-      .join('\n');
-
-    let reply = new MessageEmbed()
-      .setTitle(`${user.tag} İstatistikleri`)
-      .setDescription(timePeriod ? `Zaman dilimi: son ${timePeriod}.` : 'Tüm zamanlar:')
-      .addFields(
-        { name: 'Sesli Kanal Süresi', value: formattedVoiceTime, inline: true },
-        { name: 'Mesaj Sayıları', value: messageStats || 'Hiç mesaj gönderilmedi.', inline: false }
-      )
-      .setColor('#3498db');
-
-    message.reply({ embeds: [reply] });
   },
 };
