@@ -1,7 +1,7 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const { EmbedBuilder } = require("discord.js");
-const Ban = require("../../models/ban.js"); // Ban modelini dahil et
+const UserModel = require("../../models/userModel.js"); // UserModel'i dahil et
 
 module.exports = {
     name: "ban",
@@ -41,7 +41,7 @@ module.exports = {
             userTag = `<@${user.id}>`;
         } else {
             // Eğer etiketle kullanıcı bulunduysa, tag'ini alıyoruz.
-            userTag = `${user.tag}`;  // Burada userTag'i direkt etiket ID formatında alıyoruz
+            userTag = `${user.tag}`;
         }
 
         const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
@@ -50,21 +50,32 @@ module.exports = {
             // Kullanıcıyı yasakla
             await message.guild.members.ban(user, { reason });
 
-            // MongoDB'ye kaydet
-            const newBan = new Ban({
-                userId: user.id,
-                moderatorId: message.author.id,
-                reason: reason,
-                guildId: message.guild.id,
+            // Veritabanında kullanıcıyı bul
+            let userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
+            if (!userData) {
+                // Eğer kullanıcı verisi yoksa, yeni kullanıcı verisi oluştur
+                userData = new UserModel({
+                    userId: user.id,
+                    guildId: message.guild.id,
+                    mutes: [],
+                    jails: [],
+                    bans: []
+                });
+            }
+
+            // Ban'ı kullanıcı verisine ekle
+            userData.bans.push({
+                createdAt: new Date(),
+                reason: reason
             });
 
-            await newBan.save(); // Yeni ban kaydını veritabanına kaydet
+            await userData.save(); // Kullanıcı verisini kaydet
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#00ff00")
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Yasaklandı")
                 .setDescription(
-                    `**${userTag}** kullanıcısı başarıyla yasaklandı.` // userTag kullanarak ismi veya etiket ID'sini gösteriyoruz
+                    `**${userTag}** kullanıcısı başarıyla yasaklandı.`
                 )
                 .addFields(
                     {
