@@ -15,7 +15,6 @@ const guard = require("./utils/guard.js");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const { joinVoiceChannel } = require('@discordjs/voice');
 
 mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
