@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const UserStats = require('../../models/userStats');
+const UserStats = require('../../models/userStats.js');
 const moment = require('moment');
 
 module.exports = {
