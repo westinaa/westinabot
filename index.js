@@ -333,7 +333,7 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 // Discord token'ı doğrudan process.env'den al
-const token = process.env.DISCORD_TOKEN;
+const token = TOKEN;
 if (!token) {
     console.error("DISCORD_TOKEN bulunamadı!");
     process.exit(1);
