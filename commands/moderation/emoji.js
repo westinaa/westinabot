@@ -1,11 +1,11 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 
 module.exports = {
     name: "emoji",
     description: "Bir emojiyi sunucuya ekler",
     async execute(message, args) {
         // Yetki kontrolü: "Emojileri Yönet" yetkisi olup olmadığını kontrol et
-        if (!message.member.permissions.has("ManageEmojisAndStickers")) {
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageEmojisAndStickers)) {
             return message.reply({
                 embeds: [new EmbedBuilder()
                     .setColor("#ffffff")
@@ -14,12 +14,12 @@ module.exports = {
             });
         }
 
-        // Argüman kontrolü (emoji ve isim olmalı)
+        // Argüman kontrolü (en az 2 argüman olmalı: emoji + isim)
         if (args.length < 2) {
             return message.reply({
                 embeds: [new EmbedBuilder()
                     .setColor("#ffffff")
-                    .setDescription("<a:w_carpi:1350461649751900271> Kullanım: `.emoji :emoji: <emoji-ismi>`")
+                    .setDescription("<a:w_carpi:1350461649751900271> Kullanım: `.emoji <emoji> <emoji-ismi>`")
                 ]
             });
         }
@@ -27,8 +27,9 @@ module.exports = {
         const emojiArg = args[0]; // Kullanıcının yazdığı emoji
         const emojiName = args[1]; // Kullanıcının belirttiği emoji ismi
 
-        // Emoji URL'sini alma (özel veya genel emoji mi?)
-        const emojiMatch = emojiArg.match(/^<a?:\w+:(\d+)>$/);
+        // Yeni regex: `<a:id:isim>` veya `<id:isim>` formatlarını destekler
+        const emojiMatch = emojiArg.match(/^<?(a?):(\d+):?\w*>?$/);
+
         if (!emojiMatch) {
             return message.reply({
                 embeds: [new EmbedBuilder()
@@ -38,8 +39,8 @@ module.exports = {
             });
         }
 
-        const emojiId = emojiMatch[1];
-        const isAnimated = emojiArg.startsWith("<a:"); // Hareketli emoji mi?
+        const isAnimated = emojiMatch[1] === "a"; // Eğer "a" varsa animasyonludur
+        const emojiId = emojiMatch[2];
         const emojiURL = `https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? "gif" : "png"}`;
 
         try {
