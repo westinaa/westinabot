@@ -386,19 +386,6 @@ client.on("guildMemberRemove", async (member) => {
         reason: reason || "Sebep belirtilmemiş",
     });
 });
-
-// MongoDB Ceza Modeli
-const punishmentSchema = new mongoose.Schema({
-    userId: { type: String, required: true },
-    guildId: { type: String, required: true },
-    executorId: { type: String, required: true },
-    action: { type: String, required: true }, // "KICK", "BAN", etc.
-    reason: { type: String, default: "Sebep belirtilmemiş" },
-    date: { type: Date, default: Date.now },
-});
-
-module.exports = mongoose.model("Punishment", punishmentSchema);
-
 // Discord token'ı doğrudan process.env'den al
 const token = process.env.TOKEN;
 if (!token) {
