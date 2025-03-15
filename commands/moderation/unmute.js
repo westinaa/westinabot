@@ -30,11 +30,11 @@ module.exports = {
             new ButtonBuilder()
                 .setCustomId("writtenUnmute")
                 .setLabel("Yazılı Unmute")
-                .setStyle("PRIMARY"),
+                .setStyle("Primary"),
             new ButtonBuilder()
                 .setCustomId("voiceUnmute")
                 .setLabel("Sesli Unmute")
-                .setStyle("PRIMARY")
+                .setStyle("Primary")
         );
 
         const confirmationEmbed = new EmbedBuilder()
