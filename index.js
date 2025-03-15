@@ -30,6 +30,7 @@ mongoose.connect(process.env.MONGODB_URL, {
 connectToDB().then(() => {
     // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
     console.log("Artık veritabanı işlemleri yapılabilir.");
+    });
 });
 
 
