@@ -110,7 +110,7 @@ const LOG_CHANNEL_ID = "1350464454252560454"; // Bot durum kanal ID
     // Kanalı bul ve mesaj gönder
     const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
     if (logChannel) {
-        logChannel.send("<a:westina_onay:1349184023867691088> **Bot aktif edildi!**");
+        logChannel.send("> <:online:1349504905374863484> Giriş Başarılı! \n<a:westina_onay:1349184023867691088> **Shards, commands, utils, events ve MonoDB başarıyla aktif edildi!**");
     } else {
         console.error("Belirtilen kanal bulunamadı!");
     }
