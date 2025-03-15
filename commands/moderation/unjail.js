@@ -1,7 +1,10 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const { EmbedBuilder } = require("discord.js");
-const User = require("../../models/userModel.js"); // MongoDB modelini dahil et
+const fs = require("fs");
+const path = require("path");
+
+const jailRolesPath = path.join(__dirname, "../../data/jailRoles.json"); // JSON dosyasının yolu
 
 module.exports = {
     name: "unjail",
@@ -47,33 +50,40 @@ module.exports = {
                 return message.reply({ embeds: [errorEmbed] });
             }
 
-            // MongoDB veritabanında kullanıcıyı bul ve önceki rollerini al
-            const userRecord = await User.findOne({ userId: user.id, guildId: message.guild.id });
-            if (!userRecord) {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor("#ff0000")
-                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı verisi bulunamadı!")
-                    .setFooter({ text: message.guild.name });
-                return message.reply({ embeds: [errorEmbed] });
+            // JSON dosyasından kullanıcıyı bul ve önceki rollerini al
+            let jailRolesData = {};
+            if (fs.existsSync(jailRolesPath)) {
+                jailRolesData = JSON.parse(fs.readFileSync(jailRolesPath, "utf8"));
             }
 
-            // Kullanıcının önceki rollerini geri ver
-            const previousRoles = userRecord.previousRoles;
-            if (previousRoles && previousRoles.length > 0) {
-                await user.roles.add(previousRoles);
-            } else {
+            // Kullanıcının önceki rollerini al
+            let previousRoles = jailRolesData[user.id];
+
+            if (!previousRoles || previousRoles.length === 0) {
                 const warningEmbed = new EmbedBuilder()
                     .setColor("#ff9900")
                     .setDescription("<a:westina_warning:1349419144243576974> Kullanıcının önceki rollerini bulamadım!")
                     .setFooter({ text: message.guild.name });
                 message.reply({ embeds: [warningEmbed] });
+            } else {
+                // "sponsor" rolünü yok saymak için kontrol et
+                previousRoles = previousRoles.filter(roleId => {
+                    const role = message.guild.roles.cache.get(roleId);
+                    return role && role.name !== "sponsor"; // "sponsor" rolü hariç
+                });
+
+                // Kullanıcının önceki rollerini geri ver
+                if (previousRoles.length > 0) {
+                    await user.roles.add(previousRoles);
+                }
             }
 
             // Jail rolünü kaldır
             await user.roles.remove(jailRole);
 
-            // MongoDB kaydını sil
-            await User.deleteOne({ userId: user.id, guildId: message.guild.id });
+            // JSON dosyasından kullanıcıyı kaldır
+            delete jailRolesData[user.id];
+            fs.writeFileSync(jailRolesPath, JSON.stringify(jailRolesData, null, 4));
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#98ff98")
