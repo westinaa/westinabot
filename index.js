@@ -19,11 +19,16 @@ const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => {
-    console.log("MongoDB'ye başarıyla bağlanıldı!");
-}).catch((error) => {
-    console.error("MongoDB bağlantısı hatası:", error);
-});
+    serverSelectionTimeoutMS: 5000, // Zaman aşımını 5 saniye olarak ayarla
+    bufferCommands: false, // Buffering'i kapat
+})
+    .then(() => {
+        console.log("MongoDB'ye bağlanıldı!");
+    })
+    .catch((error) => {
+        console.error("MongoDB'ye bağlanırken hata oluştu:", error);
+    });
+
 
 app.get("/", (req, res) => {
     res.send("Bot is running!");
