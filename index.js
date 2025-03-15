@@ -102,22 +102,23 @@ client.once("ready", async () => {
         });
     }, 5000);
 
-    // Botun aktif olma zamanı
-    const botStartTime = Math.floor(client.readyTimestamp / 1000);  // Unix timestamp'ı saniye cinsinden alıyoruz
-    const activeTime = `<t:${botStartTime}:R>`; // Botun aktif olduğu zamanı timeline formatında
+   // Botun aktif olma zamanı
+const botStartTime = Math.floor(client.readyTimestamp / 1000);  // Unix timestamp'ı saniye cinsinden alıyoruz
+const activeTime = `<t:${botStartTime}:R>`; // Botun aktif olduğu zamanı timeline formatında
 
-    // Log kanal ID'sini belirle
-    const LOG_CHANNEL_ID = "1350464454252560454"; 
+// Geçen süreyi hesapla (ms cinsinden)
+const currentTime = Date.now();
+const delay = currentTime - client.readyTimestamp;  // Gecikme süresi (ms)
 
-    try {
-        // Kanalı bul ve mesaj gönder
-        const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
-        if (logChannel) {
-            await logChannel.send(`> <:online:1349504905374863484> Giriş Başarılı! \n \n**Shards, commands, utils, events ve MongoDB başarıyla aktif edildi!** <:w_tik:1350471905856978976>\n\n<:stack:1345875393961398282> Bot aktif olma zamanı: ${activeTime}`);
-        }
-    } catch (error) {
-        console.error("Kanal bulunamadı ya da mesaj gönderilemedi: ", error);
+// Kendi DM kanalınızı kullanarak mesaj gönderin
+try {
+    const user = await client.users.fetch("474006896408264712");  // Kendi Discord ID'm (botun mesajı kime atmasını istiyorsam onun idsini koyabiliriz)
+    if (user) {
+        await user.send(`> <:online:1349504905374863484> Giriş Başarılı! \n \n**Shards, commands, utils, events ve MongoDB başarıyla aktif edildi!** <:w_tik:1350471905856978976>\n\n<:stack:1345875393961398282> Bot aktif olma zamanı: ${activeTime}\n\nBotun aktif olmasından mesajın gönderilmesine kadar geçen süre: ${delay} ms`);
     }
+} catch (error) {
+    console.error("DM gönderilemedi: ", error);
+  }
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
