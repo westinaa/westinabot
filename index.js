@@ -14,6 +14,16 @@ const logger = require("./utils/logger.js");
 const guard = require("./utils/guard.js");
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
+
+mongoose.connect(process.env.MONGODB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("MongoDB'ye başarıyla bağlanıldı!");
+}).catch((error) => {
+    console.error("MongoDB bağlantısı hatası:", error);
+});
 
 app.get("/", (req, res) => {
     res.send("Bot is running!");
@@ -331,6 +341,65 @@ client.on("guildMemberRemove", async (member) => {
 
     // Not: guildMemberRemove kick olayı için de tetiklenir, bu durumda guard.js tarafından da işlenecektir
 });
+
+// Ceza Modeli
+const Punishment = require("./models/Punishment.js");
+
+client.on("guildBanAdd", async (ban) => {
+    const fetchedLogs = await ban.guild.fetchAuditLogs({
+        limit: 1,
+        type: 22, // MEMBER_BAN_ADD
+    });
+    const banLog = fetchedLogs.entries.first();
+    if (!banLog) return;
+
+    const { executor, reason } = banLog;
+
+    // Ceza kaydını MongoDB'ye kaydet
+    await Punishment.create({
+        userId: ban.user.id,
+        guildId: ban.guild.id,
+        executorId: executor.id,
+        action: "BAN",
+        reason: reason || "Sebep belirtilmemiş",
+    });
+});
+
+// Kick olayını dinle
+client.on("guildMemberRemove", async (member) => {
+    const fetchedLogs = await member.guild.fetchAuditLogs({
+        limit: 1,
+        type: 20, // MEMBER_KICK
+    });
+    const kickLog = fetchedLogs.entries.first();
+
+    if (!kickLog || kickLog.createdTimestamp < Date.now() - 5000) return;
+
+    const { executor, reason } = kickLog;
+
+    // Ceza kaydını MongoDB'ye kaydet
+    await Punishment.create({
+        userId: member.user.id,
+        guildId: member.guild.id,
+        executorId: executor.id,
+        action: "KICK",
+        reason: reason || "Sebep belirtilmemiş",
+    });
+});
+
+// MongoDB Ceza Modeli
+const mongoose = require('mongoose');
+
+const punishmentSchema = new mongoose.Schema({
+    userId: { type: String, required: true },
+    guildId: { type: String, required: true },
+    executorId: { type: String, required: true },
+    action: { type: String, required: true }, // "KICK", "BAN", etc.
+    reason: { type: String, default: "Sebep belirtilmemiş" },
+    date: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model("Punishment", punishmentSchema);
 
 // Discord token'ı doğrudan process.env'den al
 const token = process.env.TOKEN;
