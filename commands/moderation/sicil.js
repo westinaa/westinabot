@@ -7,9 +7,10 @@ module.exports = {
     name: "sicil",
     description: "Kullanıcının tüm ceza geçmişini gösterir",
     async execute(message, args) {
+        // Sadece moderatörlerin komut kullanabilmesini sağla
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
+                .setColor("#ffffff")  // Rengi beyaz yaptım
                 .setDescription("<a:westina_red:1349419144243576974> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: "made by westina <3" });
             return message.reply({ embeds: [errorEmbed] });
@@ -30,7 +31,7 @@ module.exports = {
         } else {
             // Eğer kullanıcı ne etiketlenmiş ne de ID verilmişse, komutla ilgili işlem yapmayalım.
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
+                .setColor("#ffffff")  // Rengi beyaz yaptım
                 .setTitle("Eksik argüman!")
                 .setDescription("<a:westina_red:1349419144243576974> Kullanıcının ID'sini girmelisiniz ya da etiketlemelisiniz!")
                 .setFooter({ text: "made by westina <3" });
@@ -40,7 +41,7 @@ module.exports = {
         // Kullanıcı bulunamazsa hata mesajı ver
         if (!user) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
+                .setColor("#ffffff")  // Rengi beyaz yaptım
                 .setTitle("Geçersiz kullanıcı!")
                 .setDescription("<a:westina_red:1349419144243576974> Bu ID veya etiket ile bir kullanıcı bulunamadı!")
                 .setFooter({ text: "made by westina <3" });
@@ -50,14 +51,14 @@ module.exports = {
         // Veritabanından ceza geçmişini çekme
         try {
             // Ban verisini Ban modelinden alıyoruz
-            const userBanData = await Ban.findOne({ userId: user.id, guildId: message.guild.id });
+            const userBanData = await Ban.find({ userId: user.id, guildId: message.guild.id });
 
             // UserModel üzerinden mute ve jail verilerini çekiyoruz
             const userData = await UserModel.findOne({ userId: user.id, guildId: message.guild.id });
 
-            if (!userBanData && !userData) {
+            if (!userBanData.length && !userData) {
                 const noDataEmbed = new EmbedBuilder()
-                    .setColor("#ff0000")
+                    .setColor("#ffffff")  // Rengi beyaz yaptım
                     .setTitle("Ceza Geçmişi")
                     .setDescription(`${userTag} kullanıcısının herhangi bir ceza geçmişi bulunmamaktadır.`)
                     .setFooter({ text: "made by westina <3" });
@@ -67,32 +68,34 @@ module.exports = {
             // Ceza geçmişini Embed formatında oluşturma
             let embedDescription = `**${userTag}** kullanıcısının ceza geçmişi:\n\n`;
 
-            if (userBanData) {
+            // Yasaklamalar (Banlar)
+            if (userBanData.length > 0) {
                 embedDescription += `**Yasaklamalar:**\n`;
-                userBanData.bans.forEach(ban => {
-                    embedDescription += `- Yasaklanma Tarihi: ${ban.createdAt.toDateString()}\nSebep: ${ban.reason}\n\n`;
+                userBanData.forEach(ban => {
+                    embedDescription += `- Yasaklanma Tarihi: ${ban.createdAt.toDateString()}\nSebep: ${ban.reason || 'Sebep belirtilmemiş'}\n\n`;
                 });
             }
 
+            // Mute ve Jail verileri
             if (userData) {
                 if (userData.mutes && userData.mutes.length > 0) {
                     embedDescription += `**Mutele Alınmalar:**\n`;
                     userData.mutes.forEach(mute => {
-                        embedDescription += `- Mute Tarihi: ${mute.createdAt.toDateString()}\nSebep: ${mute.reason}\n\n`;
+                        embedDescription += `- Mute Tarihi: ${mute.createdAt.toDateString()}\nSebep: ${mute.reason || 'Sebep belirtilmemiş'}\n\n`;
                     });
                 }
 
                 if (userData.jails && userData.jails.length > 0) {
                     embedDescription += `**Jail Uygulamaları:**\n`;
                     userData.jails.forEach(jail => {
-                        embedDescription += `- Jail Uygulama Tarihi: ${jail.createdAt.toDateString()}\nSebep: ${jail.reason}\n\n`;
+                        embedDescription += `- Jail Uygulama Tarihi: ${jail.createdAt.toDateString()}\nSebep: ${jail.reason || 'Sebep belirtilmemiş'}\n\n`;
                     });
                 }
             }
 
             // Sicil Embed
             const successEmbed = new EmbedBuilder()
-                .setColor("#00ff00")
+                .setColor("#ffffff")  // Rengi beyaz yaptım
                 .setTitle("<a:westina_onay:1349184023867691088> Kullanıcı Sicili")
                 .setDescription(embedDescription)
                 .setTimestamp()
@@ -101,7 +104,7 @@ module.exports = {
             message.reply({ embeds: [successEmbed] });
         } catch (error) {
             const errorEmbed = new EmbedBuilder()
-                .setColor("#ff0000")
+                .setColor("#ffffff")  // Rengi beyaz yaptım
                 .setDescription("<a:westina_red:1349419144243576974> Ceza geçmişi çekilirken bir hata oluştu!")
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
