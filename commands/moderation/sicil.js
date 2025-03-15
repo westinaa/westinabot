@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const UserModel = require('../../models/userModel.js');
+const UserModel = require('../../models/userModel.js'); // MongoDB Model
 
 module.exports = {
   name: 'sicil',
@@ -16,27 +16,13 @@ module.exports = {
 
       // Cezaları birleştir
       const allPunishments = [
-        ...userData.bans.map(p => {
-          console.log('Ban:', p);  // Debug log
-          return { type: 'Ban', ...p };
-        }),
-        ...userData.jails.map(p => {
-          console.log('Jail:', p);  // Debug log
-          return { type: 'Jail', ...p };
-        }),
-        ...userData.mutes.map(p => {
-          console.log('Mute:', p);  // Debug log
-          return { type: 'Mute', ...p };
-        }),
-        ...userData.vmutes.map(p => {
-          console.log('VMute:', p);  // Debug log
-          return { type: 'VMute', ...p };
-        }),
+        ...userData.bans.map(p => ({ type: 'Ban', ...p })),
+        ...userData.jails.map(p => ({ type: 'Jail', ...p })),
+        ...userData.mutes.map(p => ({ type: 'Mute', ...p })),
+        ...userData.vmutes.map(p => ({ type: 'VMute', ...p })),
       ];
 
       if (allPunishments.length === 0) return message.reply('Bu kullanıcının sicili temiz!');
-
-      console.log('Punishments:', allPunishments);  // Tüm cezaları konsola yazdırıyoruz
 
       // Tarihe göre sıralama (En yeni cezalar en üstte olacak)
       allPunishments.sort((a, b) => {
