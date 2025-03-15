@@ -1,7 +1,7 @@
 const { permissions } = require("../../utils/permissions.js");
 const logger = require("../../utils/logger.js");
 const { EmbedBuilder } = require("discord.js");
-const Ban = require("../../models/Ban"); // Ban modelini dahil et
+const Ban = require("../../models/ban.js"); // Ban modelini dahil et
 
 module.exports = {
     name: "ban",
