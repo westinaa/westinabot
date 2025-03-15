@@ -15,9 +15,16 @@ const guard = require("./utils/guard.js");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+require('dotenv').config(); // .env dosyasını yükle
 
 async function connectToDB() {
     const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
+
+    if (!dbURI) {
+        console.error("MongoDB URI'si tanımlanmadı!");
+        return;
+    }
+
     try {
         await mongoose.connect(dbURI, {
             useNewUrlParser: true,
@@ -36,6 +43,7 @@ connectToDB().then(() => {
     // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
     console.log("Artık veritabanı işlemleri yapılabilir.");
 });
+
 
 
 
