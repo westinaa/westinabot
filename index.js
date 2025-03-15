@@ -388,8 +388,6 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 // MongoDB Ceza Modeli
-const mongoose = require('mongoose');
-
 const punishmentSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     guildId: { type: String, required: true },
