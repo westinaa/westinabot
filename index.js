@@ -42,42 +42,6 @@ connectToDB().then(() => {
     console.log("Artık veritabanı işlemleri yapılabilir.");
 });
 
-
-client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (oldState.member.user.bot) return;
-
-  // Yeni kanal katılımı
-  if (newState.channelId && !oldState.channelId) {
-    const userStats = await UserStats.findOne({ userId: newState.member.id });
-    if (!userStats) return;
-
-    // Sesli kanala katılma zamanını kaydet
-    userStats.voiceStats.push({
-      channelId: newState.channelId,
-      joinTime: new Date(),
-      leaveTime: null,
-      totalTime: 0
-    });
-    await userStats.save();
-  }
-
-  // Kanaldan ayrılma
-  if (!newState.channelId && oldState.channelId) {
-    const userStats = await UserStats.findOne({ userId: oldState.member.id });
-    if (!userStats) return;
-
-    // Kanaldan çıkma zamanını güncelle
-    const voiceStat = userStats.voiceStats.find(vs => vs.channelId === oldState.channelId && !vs.leaveTime);
-    if (voiceStat) {
-      voiceStat.leaveTime = new Date();
-      voiceStat.totalTime = (voiceStat.leaveTime - voiceStat.joinTime) / 1000;  // Saniye cinsinden süre
-      await userStats.save();
-    }
-  }
-});
-
-
-
 app.get("/", (req, res) => {
     res.send("Bot is running!");
 });
@@ -155,7 +119,38 @@ client.once("ready", async () => {
     }
 });
 
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (oldState.member.user.bot) return;
 
+  // Yeni kanal katılımı
+  if (newState.channelId && !oldState.channelId) {
+    const userStats = await UserStats.findOne({ userId: newState.member.id });
+    if (!userStats) return;
+
+    // Sesli kanala katılma zamanını kaydet
+    userStats.voiceStats.push({
+      channelId: newState.channelId,
+      joinTime: new Date(),
+      leaveTime: null,
+      totalTime: 0
+    });
+    await userStats.save();
+  }
+
+  // Kanaldan ayrılma
+  if (!newState.channelId && oldState.channelId) {
+    const userStats = await UserStats.findOne({ userId: oldState.member.id });
+    if (!userStats) return;
+
+    // Kanaldan çıkma zamanını güncelle
+    const voiceStat = userStats.voiceStats.find(vs => vs.channelId === oldState.channelId && !vs.leaveTime);
+    if (voiceStat) {
+      voiceStat.leaveTime = new Date();
+      voiceStat.totalTime = (voiceStat.leaveTime - voiceStat.joinTime) / 1000;  // Saniye cinsinden süre
+      await userStats.save();
+    }
+  }
+});
 
 // AntiLink sistemini dahil et
 const antiLink = require("./utils/antiLink.js");
