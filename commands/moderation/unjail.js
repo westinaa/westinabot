@@ -50,12 +50,24 @@ module.exports = {
             // Jail rolünü kaldır
             await user.roles.remove(jailRole);
 
-            // MongoDB veritabanında kullanıcıyı güncelle
-            await User.findOneAndUpdate(
-                { userID: user.id, guildID: message.guild.id },
-                { $set: { jailed: false } },
-                { new: true }
-            );
+            // MongoDB veritabanında kullanıcıyı bul ve önceki rollerini al
+            const userRecord = await User.findOne({ userId: user.id, guildId: message.guild.id });
+            if (!userRecord) {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription("<a:westina_red:1349419144243576974> Kullanıcı verisi bulunamadı!")
+                    .setFooter({ text: message.guild.name });
+                return message.reply({ embeds: [errorEmbed] });
+            }
+
+            // Kullanıcının önceki rollerini geri ver
+            const previousRoles = userRecord.previousRoles;
+            if (previousRoles && previousRoles.length > 0) {
+                await user.roles.add(previousRoles);
+            }
+
+            // MongoDB kaydını sil
+            await User.deleteOne({ userId: user.id, guildId: message.guild.id });
 
             const successEmbed = new EmbedBuilder()
                 .setColor("#98ff98")
