@@ -59,14 +59,16 @@ module.exports = {
                     guildId: message.guild.id,
                     mutes: [],
                     jails: [],
-                    bans: []
+                    bans: [],
+                    vmutes: [] // Bu alan da burada olacak, gelecekte VMute işlemi eklediğinizde kullanılabilir
                 });
             }
 
             // Ban'ı kullanıcı verisine ekle
             userData.bans.push({
                 createdAt: new Date(),
-                reason: reason
+                reason: reason,
+                moderatorId: message.author.id // Moderatörün ID'sini ekliyoruz
             });
 
             await userData.save(); // Kullanıcı verisini kaydet
