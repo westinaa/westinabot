@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    previousRoles: { type: [String], default: [] }, 
     jailEndTime: {
         type: Date,
         required: true,
