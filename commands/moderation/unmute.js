@@ -1,5 +1,5 @@
 const { permissions } = require("../../utils/permissions.js");
-const { EmbedBuilder, MessageActionRow, MessageButton } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
 const User = require("../../models/userModel.js");
 
 module.exports = {
@@ -26,12 +26,12 @@ module.exports = {
         const reason = args.slice(1).join(" ") || "Sebep belirtilmedi.";
 
         // Unmute butonları oluştur
-        const row = new MessageActionRow().addComponents(
-            new MessageButton()
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
                 .setCustomId("writtenUnmute")
                 .setLabel("Yazılı Unmute")
                 .setStyle("PRIMARY"),
-            new MessageButton()
+            new ButtonBuilder()
                 .setCustomId("voiceUnmute")
                 .setLabel("Sesli Unmute")
                 .setStyle("PRIMARY")
