@@ -21,6 +21,7 @@
     "@noble/ciphers": "^1.0.0",
     "libsodium-wrappers": "^0.7.9",
     "@discordjs/opus": "^0.4.0",
-    "opusscript": "^0.0.7"
+    "opusscript": "^0.0.7",
+    "ms": "^2.1.3"
   }
 }
