@@ -1,4 +1,3 @@
-bu
 const {
     Client,
     GatewayIntentBits,
