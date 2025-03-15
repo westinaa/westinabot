@@ -106,3 +106,6 @@ module.exports = {
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
             console.error("Sicil komutu hatası:", error);
+        }
+    },
+};
