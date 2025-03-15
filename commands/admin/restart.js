@@ -1,4 +1,3 @@
-
 const { EmbedBuilder } = require("discord.js");
 const config = require("../../config.js");
 
@@ -31,9 +30,9 @@ module.exports = {
         
         console.log(`Bot ${message.author.tag} tarafından yeniden başlatılıyor...`);
         
-        // Botu yeniden başlat
+        // Botu yeniden başlatmak için Render'da process.exit kullanımı
         setTimeout(() => {
-            process.exit(0); // Process'i bitirerek Replit'in otomatik olarak yeniden başlatmasını sağlar
+            process.exit(0); // Process'i bitirerek Render'da otomatik yeniden başlatılmasını sağla
         }, 1000);
     },
 };
