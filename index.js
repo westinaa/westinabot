@@ -87,7 +87,7 @@ for (const folder of commandFolders) {
 // Sayaç sistemi modülünü dahil et
 const counter = require("./utils/counter.js");
 
-client.once("ready", () => {
+client.once("ready", async () => {
     console.log(`${client.user.tag} hazır!`);
 
     // Bot hazır olduğunda progress mesajı gönder
