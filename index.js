@@ -333,12 +333,12 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 // Discord token'ı doğrudan process.env'den al
-const token = TOKEN;
+const token = process.env.TOKEN;
 if (!token) {
     console.error("DISCORD_TOKEN bulunamadı!");
     process.exit(1);
 }
 
-client.login(token).catch((error) => {
+client.login(process.env.TOKEN || config.token);.catch((error) => {
     console.error("Bot başlatılırken hata oluştu:", error);
 });
