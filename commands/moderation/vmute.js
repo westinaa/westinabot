@@ -47,6 +47,7 @@ module.exports = {
         }
 
         const reason = args.slice(2).join(' ') || 'Sebep belirtilmedi';
+        const moderatorId = message.author.id; // Cezayı veren moderatörün ID'si
 
         // Kullanıcıyı sustur
         try {
@@ -62,6 +63,7 @@ module.exports = {
                             createdAt: Date.now(),
                             reason: reason,
                             endedAt: muteEndTime,
+                            moderatorId: moderatorId,
                         }
                     }
                 },
