@@ -104,6 +104,17 @@ client.once("ready", () => {
             type: ActivityType.Watching,
         });
     }, 5000);
+
+const LOG_CHANNEL_ID = "1350464454252560454"; // Bot durum kanal ID
+
+    // Kanalı bul ve mesaj gönder
+    const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+    if (logChannel) {
+        logChannel.send("<a:westina_onay:1349184023867691088> **Bot aktif edildi!**");
+    } else {
+        console.error("Belirtilen kanal bulunamadı!");
+    }
+
 });
 
 // AntiLink sistemini dahil et
