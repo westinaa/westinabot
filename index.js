@@ -27,7 +27,10 @@ mongoose.connect(process.env.MONGODB_URL, {
     })
     .catch((error) => {
         console.error("MongoDB'ye bağlanırken hata oluştu:", error);
-    });
+connectToDB().then(() => {
+    // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
+    console.log("Artık veritabanı işlemleri yapılabilir.");
+});
 
 
 app.get("/", (req, res) => {
