@@ -24,7 +24,7 @@ module.exports = {
                 iconURL: message.client.user.displayAvatarURL()  // Botun profil resmi
             })
             .setDescription("<a:aku_loading:1349419105622691911> Tüm komutları kaydedip sistemi tekrar başlatıyorum. \n<:seta:1346909730173354054> Bu işlem \`~ 1dk\` sürecektir.")
-            .setFooter({ text: <t:${timestamp}:R> })
+            .setFooter({ text: `<t:${timestamp}:R>` })
             .setTimestamp();
 
         await message.channel.send({ embeds: [restartEmbed] });
