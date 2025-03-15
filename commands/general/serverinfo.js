@@ -44,7 +44,7 @@ module.exports = {
         ).size;
 
         const embed = new EmbedBuilder()
-            .setColor("#0099ff")
+            .setColor("#ffffff")
             .setAuthor({ name: guild.name, iconURL: guild.iconURL({ dynamic: true }) }) // Sunucu adı ve resmi
             .setDescription(
                 `<t:${timestamp}:R> **Tarihli Sunucu Verisi**\n\n` + // Zaman gösterimi
