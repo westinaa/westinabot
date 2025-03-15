@@ -10,7 +10,7 @@ module.exports = {
         if (!permissions.checkModerator(message.member)) {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
-                .setDescription("❌ Bu komutu kullanma yetkiniz yok!")
+                .setDescription("<a:w_carpi:1350461649751900271> Bu komutu kullanma yetkiniz yok!")
                 .setFooter({ text: message.guild.name });
             return message.reply({ embeds: [errorEmbed] });
         }
@@ -31,16 +31,16 @@ module.exports = {
             // Eğer kanal zaten kilitli/açık ise uyarı ver
             if (isUnlock && canSendMessages) {
                 const warningEmbed = new EmbedBuilder()
-                    .setColor("#FFA500")
-                    .setDescription("⚠️ Bu kanal zaten açık!")
+                    .setColor("ffffff")
+                    .setDescription("<a:wuyari:1349419056129642546> Bu kanal zaten açık!")
                     .setFooter({ text: message.guild.name });
                 return message.reply({ embeds: [warningEmbed] });
             }
             
             if (!isUnlock && !canSendMessages) {
                 const warningEmbed = new EmbedBuilder()
-                    .setColor("#FFA500")
-                    .setDescription("⚠️ Bu kanal zaten kilitli!")
+                    .setColor("#ffffff")
+                    .setDescription("<a:wuyari:1349419056129642546> Bu kanal zaten kilitli!")
                     .setFooter({ text: message.guild.name });
                 return message.reply({ embeds: [warningEmbed] });
             }
@@ -51,9 +51,9 @@ module.exports = {
             });
 
             const embed = new EmbedBuilder()
-                .setColor(isUnlock ? "#00ff00" : "#ff0000")
+                .setColor(isUnlock ? "#ffffff" : "#ffffff")
                 .setTitle(
-                    isUnlock ? "🔓 Kanal Kilidi Açıldı" : "🔒 Kanal Kilitlendi",
+                    isUnlock ? "<:Kilit:1216364480892633110> Kanal Kilidi Açıldı" : "<:Kilit:1216364480892633110> Kanal Kilitlendi",
                 )
                 .setDescription(
                     `${message.channel} kanalı ${isUnlock ? "için mesaj yazma izni açıldı." : "kilitlendi. Artık sadece yetkililer mesaj yazabilir."}`,
@@ -77,7 +77,7 @@ module.exports = {
             const errorEmbed = new EmbedBuilder()
                 .setColor("#ff0000")
                 .setDescription(
-                    "❌ Kanal kilit durumu değiştirilirken bir hata oluştu!",
+                    "<a:w_carpi:1350461649751900271> Kanal kilit durumu değiştirilirken bir hata oluştu!",
                 )
                 .setFooter({ text: message.guild.name });
             message.reply({ embeds: [errorEmbed] });
