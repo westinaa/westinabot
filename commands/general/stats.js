@@ -1,5 +1,5 @@
-const { MessageEmbed } = require('discord.js');
-const UserStats = require('../../models/userStats.js'); // MongoDB modelini import et
+const { EmbedBuilder } = require('discord.js'); // doğru import
+const UserStats = require('../../models/userStats'); // MongoDB modelini import et
 const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
@@ -21,25 +21,25 @@ module.exports = {
 
       // Kanal bazında mesaj sayısı
       const userMessagesInChannel = stats.messages;
-
-      // Sunucudaki toplam mesaj sayısını hesapla
       const totalMessagesInGuild = await UserStats.aggregate([
         { $group: { _id: null, totalMessages: { $sum: "$messages" } } },
       ]);
 
-      // Sesli kanal aktifliği
+      // Ses aktifliği
       const userVoiceActivity = stats.voiceActivity;
       const totalVoiceActivityInGuild = await UserStats.aggregate([
         { $group: { _id: null, totalVoiceActivity: { $sum: "$voiceActivity" } } },
       ]);
 
-      // Embed mesajı hazırlama
-      const embed = new MessageEmbed()
+      // Embed mesaj
+      const embed = new EmbedBuilder()
         .setTitle(`${user.username} İstatistikleri`)
-        .addField('Kanal Bazında Mesaj Sayısı:', userMessagesInChannel || 0)
-        .addField('Sunucudaki Toplam Mesaj Sayısı:', totalMessagesInGuild[0].totalMessages || 0)
-        .addField('Kanal Bazında Ses Aktifliği (saniye):', userVoiceActivity || 0)
-        .addField('Sunucudaki Toplam Ses Aktifliği (saniye):', totalVoiceActivityInGuild[0].totalVoiceActivity || 0)
+        .addFields(
+          { name: 'Kanal Bazında Mesaj Sayısı:', value: userMessagesInChannel || '0', inline: true },
+          { name: 'Sunucudaki Toplam Mesaj Sayısı:', value: totalMessagesInGuild[0].totalMessages || '0', inline: true },
+          { name: 'Kanal Bazında Ses Aktifliği (saniye):', value: userVoiceActivity || '0', inline: true },
+          { name: 'Sunucudaki Toplam Ses Aktifliği (saniye):', value: totalVoiceActivityInGuild[0].totalVoiceActivity || '0', inline: true }
+        )
         .setColor('#00FF00');
 
       message.channel.send({ embeds: [embed] });
@@ -54,8 +54,8 @@ module.exports = {
         leaderboard += `${index + 1}. <@${userStat.userId}> - Mesajlar: ${userStat.messages}, Ses Aktifliği: ${userStat.voiceActivity}s\n`;
       });
 
-      // Sıralamayı embed olarak gönderme
-      const leaderboardEmbed = new MessageEmbed()
+      // Sıralamayı gönder
+      const leaderboardEmbed = new EmbedBuilder()
         .setTitle('Sunucudaki En Aktif Kullanıcılar')
         .setDescription(leaderboard)
         .setColor('#FF0000');
