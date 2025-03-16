@@ -81,12 +81,14 @@ for (const folder of commandFolders) {
     }
 }
 
-// Event handler'ları yükle
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-for (const file of eventFiles) {
+// Olayları yükle
+const eventFiles = fs.readdirSync(path.join(__dirname, 'events')).filter(file => file.endsWith('.js'));
+eventFiles.forEach(file => {
   const event = require(`./events/${file}`);
-  client.on(event.name, event.execute.bind(null, client));
-}
+  if (event.name) {
+    client.on(event.name, (...args) => event.execute(...args)); // Olayları dinle
+  }
+});
 
 // Sayaç sistemi modülünü dahil et
 const counter = require("./utils/counter.js");
