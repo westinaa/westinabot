@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js'); // doğru import
-const UserStats = require('../../models/userStats'); // MongoDB modelini import et
+const UserStats = require('../../models/userStats.js'); // MongoDB modelini import et
 const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
@@ -16,6 +16,7 @@ module.exports = {
       const stats = await UserStats.findOne({ userId: user.id });
 
       if (!stats) {
+        console.error(`İstatistik bulunamadı: ${user.id}`); // Konsola hata yazdır
         return message.channel.send("Bu kullanıcıya ait istatistik bulunamadı.");
       }
 
@@ -36,9 +37,9 @@ module.exports = {
         .setTitle(`${user.username} İstatistikleri`)
         .addFields(
           { name: 'Kanal Bazında Mesaj Sayısı:', value: String(userMessagesInChannel) || '0', inline: true },
-          { name: 'Sunucudaki Toplam Mesaj Sayısı:', value: String(totalMessagesInGuild[0].totalMessages) || '0', inline: true },
+          { name: 'Sunucudaki Toplam Mesaj Sayısı:', value: String(totalMessagesInGuild[0]?.totalMessages) || '0', inline: true },
           { name: 'Kanal Bazında Ses Aktifliği (saniye):', value: String(userVoiceActivity) || '0', inline: true },
-          { name: 'Sunucudaki Toplam Ses Aktifliği (saniye):', value: String(totalVoiceActivityInGuild[0].totalVoiceActivity) || '0', inline: true }
+          { name: 'Sunucudaki Toplam Ses Aktifliği (saniye):', value: String(totalVoiceActivityInGuild[0]?.totalVoiceActivity) || '0', inline: true }
         )
         .setColor('#00FF00');
 
@@ -62,7 +63,7 @@ module.exports = {
 
       message.channel.send({ embeds: [leaderboardEmbed] });
     } catch (error) {
-      console.error(error);
+      console.error("Hata oluştu:", error); // Hata ayrıntılarını konsola yazdır
       message.channel.send("Bir hata oluştu.");
     }
   },
