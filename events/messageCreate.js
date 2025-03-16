@@ -1,16 +1,27 @@
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
+const UserStats = require('./models/userStats.js'); // MongoDB modelini import et
 
-  // Kullanıcı istatistiklerini al
-  let userStats = await UserStats.findOne({ userId: message.author.id });
+module.exports = {
+  name: 'messageCreate', // Olay adı
+  async execute(message) {
+    // Botun kendi mesajlarını yoksay
+    if (message.author.bot) return;
 
-  if (!userStats) {
-    userStats = new UserStats({ userId: message.author.id });
-  }
+    try {
+      // Kullanıcı istatistiklerini MongoDB'den al
+      let userStats = await UserStats.findOne({ userId: message.author.id });
 
-  // Mesaj sayısını güncelle
-  userStats.messages += 1;
-  
-  // Veritabanına kaydet
-  await userStats.save();
-});
+      if (!userStats) {
+        // Eğer kullanıcıya ait istatistik yoksa, yeni bir istatistik oluştur
+        userStats = new UserStats({ userId: message.author.id });
+      }
+
+      // Mesaj sayısını güncelle
+      userStats.messages += 1;
+      
+      // Veritabanına kaydet
+      await userStats.save();
+    } catch (error) {
+      console.error('Mesaj işlenirken hata oluştu:', error);
+    }
+  },
+};
