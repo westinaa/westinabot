@@ -47,9 +47,9 @@ module.exports = {
             try {
                 await target.voice.setChannel(message.member.voice.channel.id);
                 const successEmbed = new EmbedBuilder()
-                    .setColor("#00ff00")
-                    .setTitle("✅ Kullanıcı Başarıyla Çekildi")
-                    .setDescription(`${target.user.tag} kullanıcısı **${message.member.voice.channel.name}** kanalına çekildi.`)
+                    .setColor("#ffffff")
+                    .setTitle("<a:wonay:1350962279537180785> Transfer Başarılı.")
+                    .setDescription(`<:utlarrowscratch7:1345857197871206400> ${target.user.tag} kullanıcısı **${message.member.voice.channel.name}** kanalına çekildi.`)
                     .setTimestamp()
                     .setFooter({ text: message.guild.name });
                 
@@ -63,19 +63,19 @@ module.exports = {
         // Git komutu: Komutu kullanan kullanıcıyı, etiketlediği kullanıcının kanalına gönderir
         else if (command === "git") {
             if (!message.member.voice.channel) {
-                return message.reply("❌ Önce bir ses kanalına katılmalısın!");
+                return message.reply("<a:wuyari:1349419056129642546> Önce bir ses kanalına katılmalısın!");
             }
             
             if (!target.voice.channel) {
-                return message.reply(`❌ ${target.user.tag} herhangi bir ses kanalında değil!`);
+                return message.reply(`<a:wuyari:1349419056129642546> ${target.user.tag} herhangi bir ses kanalında değil!`);
             }
 
             try {
                 await message.member.voice.setChannel(target.voice.channel.id);
                 const successEmbed = new EmbedBuilder()
-                    .setColor("#00ff00")
-                    .setTitle("✅ Kanala Başarıyla Gidildi")
-                    .setDescription(`**${target.voice.channel.name}** kanalına başarıyla gidildi.`)
+                    .setColor("#ffffff")
+                    .setTitle("<a:wonay:1350962279537180785> Kanala Başarıyla Gidildi")
+                    .setDescription(`<:utlarrowscratch7:1345857197871206400> **${target.voice.channel.name}** kanalına başarıyla gidildi.`)
                     .setTimestamp()
                     .setFooter({ text: message.guild.name });
                 
@@ -89,12 +89,12 @@ module.exports = {
         // n komutu: Etiketlenen kullanıcının hangi kanalda olduğunu gösterir ve butonlar oluşturur
         else if (command === "n") {
             if (!target.voice.channel) {
-                return message.reply(`❌ ${target.user.tag} herhangi bir ses kanalında değil!`);
+                return message.reply(`<a:wuyari:1349419056129642546> ${target.user.tag} herhangi bir ses kanalında değil!`);
             }
             
             const infoEmbed = new EmbedBuilder()
                 .setColor("#00ffff")
-                .setTitle("🔊 Ses Durumu")
+                .setTitle("<:voice:1349504902703091743> Seste Nerede?")
                 .setDescription(`**${target.user.tag}** kullanıcısı şu anda **${target.voice.channel.name}** kanalında.`)
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
@@ -106,12 +106,12 @@ module.exports = {
                         .setCustomId(`voice_pull_${target.id}`)
                         .setLabel("Kanalıma Çek")
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji("🔄"),
+                        .setEmoji("<:wcek:1350963412867223712>"),
                     new ButtonBuilder()
                         .setCustomId(`voice_goto_${target.id}`)
                         .setLabel("Kanalına Git")
                         .setStyle(ButtonStyle.Success)
-                        .setEmoji("➡️")
+                        .setEmoji("<:seta:1346909730173354054>")
                 );
             
             const response = await message.reply({ embeds: [infoEmbed], components: [row] });
@@ -129,7 +129,7 @@ module.exports = {
                     // Kullanıcının ses kanalında olup olmadığını kontrol et
                     if (!message.member.voice.channel) {
                         await interaction.followUp({ 
-                            content: "❌ Önce bir ses kanalına katılmalısın!", 
+                            content: "<a:wuyari:1349419056129642546> Önce bir ses kanalına katılmalısın!", 
                             ephemeral: true 
                         });
                         return;
@@ -138,7 +138,7 @@ module.exports = {
                     // Hedef kullanıcının ses kanalında olup olmadığını kontrol et
                     if (!target.voice.channel) {
                         await interaction.followUp({ 
-                            content: `❌ ${target.user.tag} artık bir ses kanalında değil!`, 
+                            content: `<a:wuyari:1349419056129642546> ${target.user.tag} artık bir ses kanalında değil!`, 
                             ephemeral: true 
                         });
                         return;
@@ -148,14 +148,14 @@ module.exports = {
                     if (interaction.customId === `voice_goto_${target.id}`) {
                         await message.member.voice.setChannel(target.voice.channel.id);
                         await interaction.followUp({ 
-                            content: `✅ **${target.voice.channel.name}** kanalına başarıyla gidildi.`, 
+                            content: `<a:wonay:1350962279537180785> **${target.voice.channel.name}** kanalına başarıyla gidildi.`, 
                             ephemeral: true 
                         });
                     } 
                     else if (interaction.customId === `voice_pull_${target.id}`) {
                         if (!permissions.checkModerator(message.member) && !message.member.permissions.has("MoveMembers")) {
                             await interaction.followUp({ 
-                                content: "❌ Bu işlemi yapma yetkiniz yok!", 
+                                content: "<a:wuyari:1349419056129642546> Bu işlemi yapma yetkiniz yok!", 
                                 ephemeral: true 
                             });
                             return;
@@ -163,7 +163,7 @@ module.exports = {
                         
                         await target.voice.setChannel(message.member.voice.channel.id);
                         await interaction.followUp({ 
-                            content: `✅ **${target.user.tag}** kullanıcısı kanalınıza çekildi.`, 
+                            content: `<a:wonay:1350962279537180785> **${target.user.tag}** kullanıcısı kanalınıza çekildi.`, 
                             ephemeral: true 
                         });
                     }
