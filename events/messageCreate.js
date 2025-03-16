@@ -1,4 +1,4 @@
-const UserStats = require('./models/userStats.js'); // MongoDB modelini import et
+const UserStats = require('../../models/userStats.js'); // MongoDB modelini import et
 
 module.exports = {
   name: 'messageCreate', // Olay adı
