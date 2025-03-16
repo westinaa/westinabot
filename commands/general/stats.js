@@ -35,10 +35,10 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle(`${user.username} İstatistikleri`)
         .addFields(
-          { name: 'Kanal Bazında Mesaj Sayısı:', value: userMessagesInChannel || '0', inline: true },
-          { name: 'Sunucudaki Toplam Mesaj Sayısı:', value: totalMessagesInGuild[0].totalMessages || '0', inline: true },
-          { name: 'Kanal Bazında Ses Aktifliği (saniye):', value: userVoiceActivity || '0', inline: true },
-          { name: 'Sunucudaki Toplam Ses Aktifliği (saniye):', value: totalVoiceActivityInGuild[0].totalVoiceActivity || '0', inline: true }
+          { name: 'Kanal Bazında Mesaj Sayısı:', value: String(userMessagesInChannel) || '0', inline: true },
+          { name: 'Sunucudaki Toplam Mesaj Sayısı:', value: String(totalMessagesInGuild[0].totalMessages) || '0', inline: true },
+          { name: 'Kanal Bazında Ses Aktifliği (saniye):', value: String(userVoiceActivity) || '0', inline: true },
+          { name: 'Sunucudaki Toplam Ses Aktifliği (saniye):', value: String(totalVoiceActivityInGuild[0].totalVoiceActivity) || '0', inline: true }
         )
         .setColor('#00FF00');
 
