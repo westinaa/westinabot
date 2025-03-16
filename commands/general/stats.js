@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js'); // doğru import
-const UserStats = require('../../models/userStats.js'); // MongoDB modelini import et
+const UserStats = require('../../models/userStats'); // MongoDB modelini import et
 const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
@@ -12,8 +12,14 @@ module.exports = {
     let user = message.mentions.users.first() || message.author;
 
     try {
+      // **Debug**: UserStats modelinin doğru import edilip edilmediğini kontrol et
+      console.log('UserStats Model:', UserStats);
+
       // Kullanıcı verisini MongoDB'den al
       const stats = await UserStats.findOne({ userId: user.id });
+
+      // **Debug**: stats objesinin ne döndüğünü kontrol et
+      console.log('Kullanıcı İstatistikleri:', stats);
 
       if (!stats) {
         console.error(`İstatistik bulunamadı: ${user.id}`); // Konsola hata yazdır
