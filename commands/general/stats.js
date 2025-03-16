@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const UserStats = require('../../models/userStats'); // MongoDB modelini import et
+const UserStats = require('../../models/userStats.js'); // MongoDB modelini import et
 const moment = require('moment'); // Tarih formatlamak için
 
 module.exports = {
@@ -7,31 +7,33 @@ module.exports = {
   description: 'Kullanıcı istatistiklerini gösterir ve sunucuyu sıralar.',
   async execute(message, args) {
     const guild = message.guild;
-    
+
     // Kullanıcı belirtilmişse, belirtilen kullanıcıyı al
     let user = message.mentions.users.first() || message.author;
-    
+
     try {
       // Kullanıcı verisini MongoDB'den al
       const stats = await UserStats.findOne({ userId: user.id });
-      
+
       if (!stats) {
         return message.channel.send("Bu kullanıcıya ait istatistik bulunamadı.");
       }
 
       // Kanal bazında mesaj sayısı
       const userMessagesInChannel = stats.messages;
+
+      // Sunucudaki toplam mesaj sayısını hesapla
       const totalMessagesInGuild = await UserStats.aggregate([
         { $group: { _id: null, totalMessages: { $sum: "$messages" } } },
       ]);
 
-      // Ses aktifliği
+      // Sesli kanal aktifliği
       const userVoiceActivity = stats.voiceActivity;
       const totalVoiceActivityInGuild = await UserStats.aggregate([
         { $group: { _id: null, totalVoiceActivity: { $sum: "$voiceActivity" } } },
       ]);
 
-      // Embed mesaj
+      // Embed mesajı hazırlama
       const embed = new MessageEmbed()
         .setTitle(`${user.username} İstatistikleri`)
         .addField('Kanal Bazında Mesaj Sayısı:', userMessagesInChannel || 0)
@@ -52,7 +54,7 @@ module.exports = {
         leaderboard += `${index + 1}. <@${userStat.userId}> - Mesajlar: ${userStat.messages}, Ses Aktifliği: ${userStat.voiceActivity}s\n`;
       });
 
-      // Sıralamayı gönder
+      // Sıralamayı embed olarak gönderme
       const leaderboardEmbed = new MessageEmbed()
         .setTitle('Sunucudaki En Aktif Kullanıcılar')
         .setDescription(leaderboard)
