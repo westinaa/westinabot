@@ -74,7 +74,7 @@ module.exports = {
                 await message.member.voice.setChannel(target.voice.channel.id);
                 const successEmbed = new EmbedBuilder()
                     .setColor("#ffffff")
-                    .setTitle("<a:wonay:1350962279537180785> Kanala Başarıyla Gidildi")
+                    .setTitle("<a:wonay:1350962279537180785> Transfer Başarılı.")
                     .setDescription(`<:utlarrowscratch7:1345857197871206400> **${target.voice.channel.name}** kanalına başarıyla gidildi.`)
                     .setTimestamp()
                     .setFooter({ text: message.guild.name });
@@ -93,7 +93,7 @@ module.exports = {
             }
             
             const infoEmbed = new EmbedBuilder()
-                .setColor("#00ffff")
+                .setColor("#ffffff")
                 .setTitle("<:voice:1349504902703091743> Seste Nerede?")
                 .setDescription(`**${target.user.tag}** kullanıcısı şu anda **${target.voice.channel.name}** kanalında.`)
                 .setTimestamp()
