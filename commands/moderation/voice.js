@@ -1,4 +1,3 @@
-
 const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { permissions } = require("../../utils/permissions.js");
 
@@ -49,7 +48,7 @@ module.exports = {
                 const successEmbed = new EmbedBuilder()
                     .setColor("#ffffff")
                     .setTitle("<a:wonay:1350962279537180785> Transfer Başarılı.")
-                    .setDescription(`<:utlarrowscratch7:1345857197871206400> ${target.user.tag} kullanıcısı **${message.member.voice.channel.name}** kanalına çekildi.`)
+                    .setDescription(`<:utlarrowscratch7:1345857197871206400> ${target.toString()} kullanıcısı **${message.member.voice.channel.name}** kanalına çekildi.`)
                     .setTimestamp()
                     .setFooter({ text: message.guild.name });
                 
@@ -67,7 +66,7 @@ module.exports = {
             }
             
             if (!target.voice.channel) {
-                return message.reply(`<a:wuyari:1349419056129642546> ${target.user.tag} herhangi bir ses kanalında değil!`);
+                return message.reply(`<a:wuyari:1349419056129642546> ${target.toString()} herhangi bir ses kanalında değil!`);
             }
 
             try {
@@ -95,7 +94,7 @@ module.exports = {
             const infoEmbed = new EmbedBuilder()
                 .setColor("#ffffff")
                 .setTitle("<:voice:1349504902703091743> Seste Nerede?")
-                .setDescription(`**${target.user.tag}** kullanıcısı şu anda **${target.voice.channel.name}** kanalında.`)
+                .setDescription(`${target.toString()} kullanıcısı şu anda **${target.voice.channel.name}** kanalında.`)
                 .setTimestamp()
                 .setFooter({ text: message.guild.name });
             
