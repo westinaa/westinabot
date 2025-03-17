@@ -9,14 +9,14 @@ module.exports = {
     const user = message.mentions.users.first() || message.author;
 
     try {
-      // "top" argümanı kontrolü
+      // Eğer "top" argümanı girilmişse sıralamayı göster
       if (args[0] === 'top') {
         const allUsersStats = await UserStats.find();
         const sortedStats = allUsersStats.sort((a, b) => (b.messages + b.voiceActivity) - (a.messages + a.voiceActivity));
 
         let leaderboard = '';
         sortedStats.slice(0, 5).forEach((userStat, index) => {
-          leaderboard += `${index + 1}. <@${userStat.userId}> - Mesajlar: ${userStat.messages}, Ses Aktifliği: ${formatVoiceTime(userStat.voiceActivity)}\n`;
+          leaderboard += `${index + 1}. <@${userStat.userId}> - Mesajlar: ${userStat.messages}, Ses Aktifliği: ${userStat.voiceActivity}s\n`;
         });
 
         const leaderboardEmbed = new EmbedBuilder()
@@ -27,7 +27,7 @@ module.exports = {
         return message.channel.send({ embeds: [leaderboardEmbed] });
       }
 
-      // Kullanıcı istatistiklerini getir
+      // Kullanıcı istatistiklerini göster
       const stats = await UserStats.findOne({ userId: user.id });
 
       if (!stats) {
@@ -39,13 +39,13 @@ module.exports = {
         .setColor('#ffffff')
         .setDescription(`**${user}** üyesinin **${moment().format('D MMMM YYYY HH:mm')}** tarihinden itibaren sunucudaki toplam ses ve mesaj bilgileri aşağıda belirtilmiştir.`)
         .addFields(
-          { name: '**🗣️ Toplam Ses**', value: `${formatVoiceTime(stats.voiceActivity)}`, inline: false },
+          { name: '**🗣️ Toplam Ses**', value: `${stats.voiceActivity || 0} saniye`, inline: false },
           { name: '**💬 Toplam Mesaj**', value: `${stats.messages || 0} mesaj`, inline: false },
           { name: '**📨 Toplam Davet**', value: `Veri bulunmuyor.`, inline: false }
         )
         .addFields(
           { name: '⭐ **Sesli Sohbet İstatistiği**', value: '\u200B', inline: false },
-          { name: '🔊 **Genel Toplam Ses**', value: `${formatVoiceTime(stats.voiceActivity)}`, inline: true },
+          { name: '🔊 **Genel Toplam Ses**', value: `${stats.voiceActivity || 0} saniye`, inline: true },
           { name: '💬 **Genel Toplam Mesaj**', value: `${stats.messages || 0} mesaj`, inline: true },
           { name: '🕰️ **Haftalık Ses**', value: `0 dakika`, inline: true },
           { name: '💬 **Haftalık Chat**', value: `3 mesaj`, inline: true },
@@ -65,10 +65,3 @@ module.exports = {
     }
   },
 };
-
-// Süreyi saat ve dakikaya çeviren yardımcı fonksiyon
-function formatVoiceTime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  return `${hours} saat, ${minutes} dakika`;
-}
