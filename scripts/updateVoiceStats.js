@@ -2,7 +2,15 @@ const UserStats = require('../../models/userStats.js'); // Dizin yapısına gör
 const mongoose = require('mongoose');
 
 async function updateOldData() {
-  await mongoose.connect('mongodb://localhost:27017/discordbot', { 
+  const dbURI = process.env.MONGODB; // MongoDB URI'sini environment variable'dan alıyoruz
+
+  if (!dbURI) {
+    console.error("MongoDB URI'si tanımlanmadı!");
+    return;
+  }
+
+  // MongoDB'ye bağlanıyoruz
+  await mongoose.connect(dbURI, { 
     useNewUrlParser: true, 
     useUnifiedTopology: true 
   });
