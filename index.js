@@ -16,7 +16,7 @@ const UserStats = require('./models/userStats.js')
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const userStatsUpdate = require("../../scripts/userStatsUpdate.js"); // userStatsUpdate.js dosyasını dahil ediyoruz
+const userStatsUpdate = require("./src/scripts/userStatsUpdate.js");
 
 async function connectToDB() {
     const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
