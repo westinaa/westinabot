@@ -155,6 +155,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       leaveTime: null,
       totalTime: 0
     });
+
+    // Sesli kanal aktifliğini ekle
+    userStats.voiceMinutes += 0;  // Bu değeri daha sonra leaveTime ile güncelleyeceğiz
     await userStats.save();
   }
 
@@ -167,7 +170,11 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const voiceStat = userStats.voiceStats.find(vs => vs.channelId === oldState.channelId && !vs.leaveTime);
     if (voiceStat) {
       voiceStat.leaveTime = new Date();
-      voiceStat.totalTime = (voiceStat.leaveTime - voiceStat.joinTime) / 1000;  // Saniye cinsinden süre
+      const durationInMinutes = (voiceStat.leaveTime - voiceStat.joinTime) / 1000 / 60;  // Dakika cinsinden süre
+      voiceStat.totalTime = durationInMinutes * 60;  // Saniye cinsinden toplam süre
+      userStats.voiceMinutes += durationInMinutes;  // Toplam ses süresi dakika cinsinden
+      userStats.voiceHours = Math.floor(userStats.voiceMinutes / 60); // Saat cinsine çevir
+      userStats.voiceMinutes = userStats.voiceMinutes % 60;  // Dakika kısmını tut
       await userStats.save();
     }
   }
