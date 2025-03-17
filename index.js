@@ -18,6 +18,7 @@ const app = express();
 const mongoose = require("mongoose");
 const userStatsUpdate = require("./scripts/userStatsUpdate.js");
 
+// Veritabanına bağlanma fonksiyonu
 async function connectToDB() {
     const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
 
@@ -27,33 +28,25 @@ async function connectToDB() {
     }
 
     try {
+        // MongoDB'ye bağlanıyoruz
         await mongoose.connect(dbURI, {
             serverSelectionTimeoutMS: 5000, // Bağlantı zaman aşımı süresi (ms)
             bufferCommands: false, // Buffering'i kapat
-            ssl: true, 
+            ssl: true,
         });
 
+        // Veritabanına başarıyla bağlandığında mesajı yazdırıyoruz
         console.log("MongoDB'ye bağlanıldı!");
+
+        // Bağlantı sağlandıktan sonra updateOldData fonksiyonunu çalıştırıyoruz
+        await userStatsUpdate.updateOldData(); // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
     } catch (error) {
         console.error("MongoDB'ye bağlanırken hata oluştu:", error);
     }
 }
 
-connectToDB().then(() => {
-    // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
-    console.log("Artık veritabanı işlemleri yapılabilir.");
-   // Veritabanı bağlantısı sağlandıktan sonra updateOldData fonksiyonunu çalıştırıyoruz
-    // Bağlantı sağlandıktan sonra işlemi başlatıyoruz
-        await userStatsUpdate.updateOldData(); // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
-    } catch (error) {
-        console.error("MongoDB'ye bağlanırken hata oluştu:", error);
-    }
-  }
-});
-
 // Veritabanına bağlanıp işlemi başlatıyoruz
 connectToDB().catch(console.error);
-
 
 app.get("/", (req, res) => {
     res.send("Bot is running!");
