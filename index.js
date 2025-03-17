@@ -37,9 +37,6 @@ async function connectToDB() {
 
         // Veritabanına başarıyla bağlandığında mesajı yazdırıyoruz
         console.log("MongoDB'ye bağlanıldı!");
-
-        // Bağlantı sağlandıktan sonra updateOldData fonksiyonunu çalıştırıyoruz
-        await userStatsUpdate.updateOldData(); // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
     } catch (error) {
         console.error("MongoDB'ye bağlanırken hata oluştu:", error);
     }
