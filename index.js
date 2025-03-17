@@ -43,8 +43,17 @@ connectToDB().then(() => {
     // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
     console.log("Artık veritabanı işlemleri yapılabilir.");
    // Veritabanı bağlantısı sağlandıktan sonra updateOldData fonksiyonunu çalıştırıyoruz
-    userStatsUpdate.updateOldData().catch(console.error);  // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
+    // Bağlantı sağlandıktan sonra işlemi başlatıyoruz
+        await userStatsUpdate.updateOldData(); // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
+    } catch (error) {
+        console.error("MongoDB'ye bağlanırken hata oluştu:", error);
+    }
+  }
 });
+
+// Veritabanına bağlanıp işlemi başlatıyoruz
+connectToDB().catch(console.error);
+
 
 app.get("/", (req, res) => {
     res.send("Bot is running!");
