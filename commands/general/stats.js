@@ -36,6 +36,10 @@ module.exports = {
 
       // Embed formatını örneğe göre düzenle
       const embed = new EmbedBuilder()
+.setAuthor({
+  name: user.username,
+  iconURL: user.displayAvatarURL({ dynamic: true })
+})
         .setColor('#ffffff')
         .setDescription(`**${user}** üyesinin **${moment().format('D MMMM YYYY HH:mm')}** tarihinden itibaren sunucudaki toplam ses ve mesaj bilgileri aşağıda belirtilmiştir.`)
         .addFields(
