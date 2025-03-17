@@ -16,6 +16,7 @@ const UserStats = require('./models/userStats.js')
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const userStatsUpdate = require("./scripts/userStatsUpdate.js"); // userStatsUpdate.js dosyasını dahil ediyoruz
 
 async function connectToDB() {
     const dbURI = process.env.MONGODB; // MongoDB URI'nizi buraya yazın
@@ -41,6 +42,8 @@ async function connectToDB() {
 connectToDB().then(() => {
     // MongoDB bağlantısı sağlandıktan sonra komutlarınız burada çalışabilir
     console.log("Artık veritabanı işlemleri yapılabilir.");
+   // Veritabanı bağlantısı sağlandıktan sonra updateOldData fonksiyonunu çalıştırıyoruz
+    userStatsUpdate.updateOldData().catch(console.error);  // userStatsUpdate.js içindeki fonksiyonu çalıştırıyoruz
 });
 
 app.get("/", (req, res) => {
