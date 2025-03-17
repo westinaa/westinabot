@@ -143,6 +143,11 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const userStats = await UserStats.findOne({ userId: newState.member.id });
     if (!userStats) return;
 
+    // voiceStats dizisini kontrol et ve başlat
+    if (!userStats.voiceStats) {
+      userStats.voiceStats = [];  // Eğer undefined veya null ise başlatıyoruz
+    }
+
     // Sesli kanala katılma zamanını kaydet
     userStats.voiceStats.push({
       channelId: newState.channelId,
