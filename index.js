@@ -196,41 +196,6 @@ client.on('inviteCreate', async invite => {
     }
   });
 
-// Ses istatistikleri için
-client.on('voiceStateUpdate', async (oldState, newState) => {
-    if (!oldState || !newState) return;
-  
-    // Kullanıcı ses kanalına girdiğinde
-    if (!oldState.channelId && newState.channelId) {
-      newState.member.voiceJoinTime = Date.now();
-    }
-    // Kullanıcı ses kanalından çıktığında
-    else if (oldState.channelId && !newState.channelId) {
-      if (oldState.member.voiceJoinTime) {
-        const voiceTime = Date.now() - oldState.member.voiceJoinTime;
-        const minutes = Math.floor(voiceTime / 60000);
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-  
-        try {
-          await UserStats.findOneAndUpdate(
-            { userId: oldState.member.id }, // userID yerine userId kullanıyoruz
-            { 
-              $inc: { 
-                voiceHours: hours,
-                voiceMinutes: remainingMinutes
-              }
-            },
-            { upsert: true }
-          );
-        } catch (error) {
-          console.error('Ses istatistiği güncellenirken hata:', error);
-        }
-      }
-    }
-  });
-  
-
 // AntiLink sistemini dahil et
 const antiLink = require("./utils/antiLink.js");
 
