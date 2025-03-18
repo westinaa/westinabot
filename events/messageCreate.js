@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const UserStats = require('../../models/userStats.js');
+const UserStats = require('../models/userStats.js');
 const moment = require('moment');
 
 module.exports = {
