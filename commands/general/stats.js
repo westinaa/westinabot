@@ -66,6 +66,20 @@ module.exports = {
         `Sahte: ${userStats.invites?.fake || 0}`
       ].join('\n');
 
+      // Haftalık mesaj sıfırlama kontrolü
+      const lastWeeklyResetMessages = moment(userStats.lastWeeklyResetMessages);
+      const lastWeeklyResetVoice = moment(userStats.lastWeeklyResetVoice);
+
+      // Haftalık mesaj sıfırlama
+      const weeklyResetStatus = lastWeeklyResetMessages.isoWeek() !== moment().isoWeek() 
+        ? 'Haftalık mesaj verileri sıfırlanmış.' 
+        : `Son sıfırlama: ${lastWeeklyResetMessages.format('YYYY-MM-DD HH:mm')}`;
+      
+      // Haftalık ses sıfırlama
+      const weeklyVoiceResetStatus = lastWeeklyResetVoice.isoWeek() !== moment().isoWeek() 
+        ? 'Haftalık ses verileri sıfırlanmış.' 
+        : `Son sıfırlama: ${lastWeeklyResetVoice.format('YYYY-MM-DD HH:mm')}`;
+
       const embed = new EmbedBuilder()
         .setColor('#ffffff')
         .setAuthor({
@@ -79,6 +93,10 @@ module.exports = {
           `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
           `Haftalık Mesaj: \`${weeklyMessages}\`\n` +
           `Günlük Mesaj: \`${dailyMessages}\`\n\n` +
+          
+          `<a:refresh:emojiId> __**Haftalık Sıfırlama Durumu**__\n` +
+          `Haftalık Mesaj Durumu: ${weeklyResetStatus}\n` +
+          `Haftalık Ses Durumu: ${weeklyVoiceResetStatus}\n\n` +
 
           `<:voice:1349504902703091743> __**Ses İstatistikleri**__\n` +
           `Toplam Ses Süresi: \`${totalVoiceTime}\`\n` +
