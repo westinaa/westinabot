@@ -51,7 +51,7 @@ module.exports = {
           const lastWeeklyResetVoice = moment(userStats.lastWeeklyResetVoice);
 
           // Pazartesi günü haftalık veriyi sıfırlıyoruz
-          if (now.isoWeekday() === 1 && now.isoWeek() !== lastWeeklyResetMessages.isoWeek()) {
+          if (now.isoWeekday() === 1 && now.isoWeek() !== lastWeeklyResetVoice.isoWeek()) {
             userStats.voiceWeeklyMinutes = 0;
             userStats.voiceWeeklyHours = 0;
             userStats.lastWeeklyResetVoice = now.toDate();  // Haftalık ses sıfırlama zamanı
