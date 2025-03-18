@@ -52,7 +52,7 @@ module.exports = {
       ].join('\n');
 
       const embed = new EmbedBuilder()
-        .setColor('#0099ff')
+        .setColor('#ffffff')
         .setTitle(`${targetUser.username} İstatistikleri`)
         .setThumbnail(targetUser.displayAvatarURL())
         .addFields(
