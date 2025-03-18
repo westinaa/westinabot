@@ -8,9 +8,27 @@ module.exports = {
   description: 'Kullanıcının istatistiklerini gösterir',
   async execute(message, args) {
     try {
-      const targetUser = message.mentions.users.first() || 
-                        await message.client.users.fetch(args[0]) || 
-                        message.author;
+      let targetUser;
+      
+      if (args[0]) {
+        try {
+          // Önce mention kontrolü
+          targetUser = message.mentions.users.first();
+          
+          // Mention yoksa ID ile dene
+          if (!targetUser) {
+            targetUser = await message.client.users.fetch(args[0]);
+          }
+        } catch (error) {
+          return message.reply('Geçerli bir kullanıcı belirtmelisiniz!');
+        }
+      } else {
+        targetUser = message.author;
+      }
+
+      if (!targetUser) {
+        return message.reply('Kullanıcı bulunamadı!');
+      }
 
       const userStats = await UserStats.findOne({ userId: targetUser.id });
 
@@ -20,17 +38,17 @@ module.exports = {
 
       // Ses süresini formatla
       const totalVoiceTime = moment.duration({
-        hours: userStats.voiceHours,
-        minutes: userStats.voiceMinutes
+        hours: userStats.voiceHours || 0,
+        minutes: userStats.voiceMinutes || 0
       }).format('H [saat], m [dakika]');
 
       // Davet istatistikleri
       const inviteStats = [
-        `Toplam: ${userStats.invites.total}`,
-        `Gerçek: ${userStats.invites.real}`,
-        `Bonus: ${userStats.invites.bonus}`,
-        `Ayrılan: ${userStats.invites.left}`,
-        `Sahte: ${userStats.invites.fake}`
+        `Toplam: ${userStats.invites?.total || 0}`,
+        `Gerçek: ${userStats.invites?.real || 0}`,
+        `Bonus: ${userStats.invites?.bonus || 0}`,
+        `Ayrılan: ${userStats.invites?.left || 0}`,
+        `Sahte: ${userStats.invites?.fake || 0}`
       ].join('\n');
 
       const embed = new EmbedBuilder()
@@ -40,7 +58,7 @@ module.exports = {
         .addFields(
           { 
             name: '💬 Mesaj İstatistikleri', 
-            value: `Toplam Mesaj: ${userStats.messages}`, 
+            value: `Toplam Mesaj: ${userStats.messages || 0}`, 
             inline: true 
           },
           { 
@@ -55,7 +73,7 @@ module.exports = {
           }
         )
         .setFooter({ 
-          text: `${message.guild.name}`, 
+          text: message.guild.name, 
           iconURL: message.guild.iconURL() 
         })
         .setTimestamp();
