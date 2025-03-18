@@ -16,7 +16,7 @@ module.exports = {
           messages: 0,
           dailyMessages: 0,
           weeklyMessages: 0,
-          lastWeeklyReset: Date.now()
+          lastWeeklyResetMessages: Date.now(), // Haftalık sıfırlama tarihi ekleniyor
         });
       }
 
@@ -25,13 +25,13 @@ module.exports = {
 
       // Haftalık mesaj sayısını artır
       const now = moment();
-      const lastWeeklyReset = moment(userStats.lastWeeklyReset);
-      
+      const lastWeeklyReset = moment(userStats.lastWeeklyResetMessages); // Haftalık sıfırlama tarihi
+
       // Haftalık sıfırlamayı kontrol et
       if (now.isoWeek() !== lastWeeklyReset.isoWeek()) {
         // Haftalık sıfırlama: Pazartesi'den Pazartesi'ye sıfırlama
         userStats.weeklyMessages = 1;  // Yeni haftanın ilk mesajı
-        userStats.lastWeeklyReset = now.toDate();  // Haftalık reset zamanı güncelleniyor
+        userStats.lastWeeklyResetMessages = now.toDate();  // Haftalık reset zamanı güncelleniyor
       } else {
         userStats.weeklyMessages += 1;
       }
