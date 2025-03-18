@@ -53,15 +53,23 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor('#ffffff')
-        .setTitle(`${targetUser.username} İstatistikleri`)
-        .setThumbnail(targetUser.displayAvatarURL())
+        .setAuthor({
+          name: `${targetUser.username}`,
+          iconURL: targetUser.displayAvatarURL(),
+        })
         .setDescription(
+          `@${targetUser.username} üyesinin \`(${moment().format('YYYY-MM-DD')})\` tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
+          
           `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
-          `Toplam Mesaj: \`${userStats.messages || 0}\`\n\n` +
-          
+          `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
+          `Haftalık Mesaj: \`${weeklyMessages}\`\n` +
+          `Günlük Mesaj: \`${dailyMessages}\`\n\n` +
+
           `<:voice:1349504902703091743> __**Ses İstatistikleri**__\n` +
-          `\`${totalVoiceTime}\`\n\n` +
-          
+          `Toplam Ses Süresi: \`${totalVoiceTime}\`\n` +
+          `Haftalık Ses Süresi: \`${weeklyVoiceTime}\`\n` +
+          `Günlük Ses Süresi: \`${dailyVoiceTime}\`\n\n` +
+
           `<:invite:1350472218500665417> __**Davet İstatistikleri**__\n` +
           `\`${inviteStats}\``
         )
