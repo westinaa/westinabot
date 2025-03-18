@@ -18,7 +18,8 @@ const userStatsSchema = new mongoose.Schema({
     left: { type: Number, default: 0 },
     fake: { type: Number, default: 0 }
   },
-  lastWeeklyReset: { type: Date, default: Date.now } // Haftalık sıfırlama tarihi
+  lastWeeklyResetMessages: { type: Date, default: Date.now }, // Haftalık mesaj sıfırlama tarihi
+  lastWeeklyResetVoice: { type: Date, default: Date.now } // Haftalık ses sıfırlama tarihi
 });
 
 module.exports = mongoose.model('UserStats', userStatsSchema);
