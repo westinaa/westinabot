@@ -1,27 +1,48 @@
-const UserStats = require('../models/userStats.js'); // MongoDB modelini import et
+const { Events } = require('discord.js');
+const UserStats = require('../../models/userStats.js');
+const moment = require('moment');
 
 module.exports = {
-  name: 'messageCreate', // Olay adı
+  name: Events.MessageCreate,
   async execute(message) {
-    // Botun kendi mesajlarını yoksay
-    if (message.author.bot) return;
+    if (message.author.bot) return; // Botların mesajlarını sayma
 
     try {
-      // Kullanıcı istatistiklerini MongoDB'den al
       let userStats = await UserStats.findOne({ userId: message.author.id });
 
       if (!userStats) {
-        // Eğer kullanıcıya ait istatistik yoksa, yeni bir istatistik oluştur
-        userStats = new UserStats({ userId: message.author.id });
+        userStats = new UserStats({
+          userId: message.author.id,
+          messages: 0,
+          dailyMessages: 0,
+          weeklyMessages: 0,
+          lastWeeklyReset: Date.now()
+        });
       }
 
-      // Mesaj sayısını güncelle
-      userStats.messages += 1;
+      // Günlük mesaj sayısını artır
+      userStats.dailyMessages += 1;
+
+      // Haftalık mesaj sayısını artır
+      const now = moment();
+      const lastWeeklyReset = moment(userStats.lastWeeklyReset);
       
-      // Veritabanına kaydet
-      await userStats.save();
+      // Haftalık sıfırlamayı kontrol et
+      if (now.isoWeek() !== lastWeeklyReset.isoWeek()) {
+        // Haftalık sıfırlama: Pazartesi'den Pazartesi'ye sıfırlama
+        userStats.weeklyMessages = 1;  // Yeni haftanın ilk mesajı
+        userStats.lastWeeklyReset = now.toDate();  // Haftalık reset zamanı güncelleniyor
+      } else {
+        userStats.weeklyMessages += 1;
+      }
+
+      // Toplam mesaj sayısını artır
+      userStats.messages += 1;
+
+      await userStats.save();  // Güncellenmiş veriyi kaydet
+
     } catch (error) {
-      console.error('Mesaj işlenirken hata oluştu:', error);
+      console.error('Mesaj güncellenirken bir hata oluştu:', error);
     }
-  },
+  }
 };
