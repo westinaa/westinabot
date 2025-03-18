@@ -42,6 +42,18 @@ module.exports = {
         minutes: userStats.voiceMinutes || 0
       }).format('H [saat], m [dakika]');
 
+       // Haftalık ve günlük istatistikler
+       const weeklyMessages = userStats.weeklyMessages || 0;
+       const dailyMessages = userStats.dailyMessages || 0;
+       const weeklyVoiceTime = moment.duration({
+         hours: userStats.weeklyVoiceHours || 0,
+         minutes: userStats.weeklyVoiceMinutes || 0
+       }).format('H [saat], m [dakika]');
+       const dailyVoiceTime = moment.duration({
+         hours: userStats.dailyVoiceHours || 0,
+         minutes: userStats.dailyVoiceMinutes || 0
+       }).format('H [saat], m [dakika]');
+
       // Davet istatistikleri
       const inviteStats = [
         `Toplam: ${userStats.invites?.total || 0}`,
