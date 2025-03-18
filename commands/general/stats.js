@@ -42,20 +42,20 @@ module.exports = {
         minutes: userStats.voiceMinutes || 0
       }).format('H [saat], m [dakika]');
 
-       // Haftalık ve günlük mesaj istatistikleri
-  const weeklyMessages = userStats.messages.filter(msg => moment(msg.date).isAfter(moment().subtract(7, 'days'))).length;
-  const dailyMessages = userStats.messages.filter(msg => moment(msg.date).isAfter(moment().subtract(1, 'days'))).length;
-  
- // Haftalık ve günlük ses süresi için hesaplamalar
- const weeklyVoiceTime = moment.duration({
-  hours: userStats.voiceWeeklyHours || 0,
-  minutes: userStats.voiceWeeklyMinutes || 0
-}).format('H [saat], m [dakika]');
+      // Haftalık ve günlük mesaj istatistikleri
+      const weeklyMessages = userStats.weeklyMessages || 0;
+      const dailyMessages = userStats.dailyMessages || 0;
+      
+      // Haftalık ve günlük ses süresi için hesaplamalar
+      const weeklyVoiceTime = moment.duration({
+        hours: userStats.voiceWeeklyHours || 0,
+        minutes: userStats.voiceWeeklyMinutes || 0
+      }).format('H [saat], m [dakika]');
 
-const dailyVoiceTime = moment.duration({
-  hours: userStats.voiceDailyHours || 0,
-  minutes: userStats.voiceDailyMinutes || 0
-}).format('H [saat], m [dakika]');
+      const dailyVoiceTime = moment.duration({
+        hours: userStats.voiceDailyHours || 0,
+        minutes: userStats.voiceDailyMinutes || 0
+      }).format('H [saat], m [dakika]');
 
       // Davet istatistikleri
       const inviteStats = [
