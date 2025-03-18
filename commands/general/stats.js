@@ -55,22 +55,15 @@ module.exports = {
         .setColor('#ffffff')
         .setTitle(`${targetUser.username} İstatistikleri`)
         .setThumbnail(targetUser.displayAvatarURL())
-        .addFields(
-          { 
-            name: '💬 Mesaj İstatistikleri', 
-            value: `Toplam Mesaj: ${userStats.messages || 0}`, 
-            inline: true 
-          },
-          { 
-            name: '🎤 Ses İstatistikleri', 
-            value: totalVoiceTime, 
-            inline: true 
-          },
-          { 
-            name: '📨 Davet İstatistikleri', 
-            value: inviteStats,
-            inline: false 
-          }
+        .setDescription(
+          `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
+          `Toplam Mesaj: \`${userStats.messages || 0}\`\n\n` +
+          
+          `<:voice:1349504902703091743> __**Ses İstatistikleri**__\n` +
+          `\`${totalVoiceTime}\`\n\n` +
+          
+          `<:invite:1350472218500665417> __**Davet İstatistikleri**__\n` +
+          `\`${inviteStats}\``
         )
         .setFooter({ 
           text: message.guild.name, 
