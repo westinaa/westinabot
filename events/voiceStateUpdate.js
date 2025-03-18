@@ -1,3 +1,4 @@
+const { Events } = require('discord.js'); 
 const UserStats = require('../models/userStats.js');
 
 module.exports = {
