@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const UserStats = require('../models/userStats.js');
+const UserStats = require('../../models/userStats.js');
 const moment = require('moment');
 require('moment-duration-format');
 
