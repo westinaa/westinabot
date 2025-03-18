@@ -135,50 +135,40 @@ try {
   }
 });
 
+// Ses istatistikleri için
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (oldState.member.user.bot) return;
-
-  // Yeni kanal katılımı
-  if (newState.channelId && !oldState.channelId) {
-    const userStats = await UserStats.findOne({ userId: newState.member.id });
-    if (!userStats) return;
-
-    // voiceStats dizisini kontrol et ve başlat
-    if (!userStats.voiceStats) {
-      userStats.voiceStats = [];  // Eğer undefined veya null ise başlatıyoruz
+    if (!oldState || !newState) return;
+  
+    // Kullanıcı ses kanalına girdiğinde
+    if (!oldState.channelId && newState.channelId) {
+      newState.member.voiceJoinTime = Date.now();
     }
-
-    // Sesli kanala katılma zamanını kaydet
-    userStats.voiceStats.push({
-      channelId: newState.channelId,
-      joinTime: new Date(),
-      leaveTime: null,
-      totalTime: 0
-    });
-
-    // Sesli kanal aktifliğini ekle
-    userStats.voiceMinutes += 0;  // Bu değeri daha sonra leaveTime ile güncelleyeceğiz
-    await userStats.save();
-  }
-
-  // Kanaldan ayrılma
-  if (!newState.channelId && oldState.channelId) {
-    const userStats = await UserStats.findOne({ userId: oldState.member.id });
-    if (!userStats) return;
-
-    // Kanaldan çıkma zamanını güncelle
-    const voiceStat = userStats.voiceStats.find(vs => vs.channelId === oldState.channelId && !vs.leaveTime);
-    if (voiceStat) {
-      voiceStat.leaveTime = new Date();
-      const durationInMinutes = (voiceStat.leaveTime - voiceStat.joinTime) / 1000 / 60;  // Dakika cinsinden süre
-      voiceStat.totalTime = durationInMinutes * 60;  // Saniye cinsinden toplam süre
-      userStats.voiceMinutes += durationInMinutes;  // Toplam ses süresi dakika cinsinden
-      userStats.voiceHours = Math.floor(userStats.voiceMinutes / 60); // Saat cinsine çevir
-      userStats.voiceMinutes = userStats.voiceMinutes % 60;  // Dakika kısmını tut
-      await userStats.save();
+    // Kullanıcı ses kanalından çıktığında
+    else if (oldState.channelId && !newState.channelId) {
+      if (oldState.member.voiceJoinTime) {
+        const voiceTime = Date.now() - oldState.member.voiceJoinTime;
+        const minutes = Math.floor(voiceTime / 60000);
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+  
+        try {
+          await UserStats.findOneAndUpdate(
+            { userId: oldState.member.id },
+            { 
+              $inc: { 
+                voiceHours: hours,
+                voiceMinutes: remainingMinutes
+              }
+            },
+            { upsert: true }
+          );
+        } catch (error) {
+          console.error('Ses istatistiği güncellenirken hata:', error);
+        }
+      }
     }
-  }
-});
+  });
+  
 
 // AntiLink sistemini dahil et
 const antiLink = require("./utils/antiLink.js");
@@ -229,6 +219,23 @@ client.on("messageCreate", async (message) => {
                 }
             }
         }
+
+        // Stat güncelleme
+  try {
+    await UserStats.findOneAndUpdate(
+      { guildID: message.guild.id, userID: message.author.id },
+      {
+        $inc: {
+          messageCount: 1,
+          [`messageStats.${message.channel.id}`]: 1
+        },
+        $set: { lastMessageDate: new Date() }
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    console.error('Mesaj istatistiği güncellenirken hata:', error);
+  }
 
         const command = client.commands.get(commandName);
 
@@ -355,7 +362,7 @@ client.on("guildBanAdd", async (ban) => {
     );
 });
 
-// Kick olayını dinle
+// Kick olayını dinle // deneme
 client.on("guildMemberRemove", async (member) => {
     const fetchedLogs = await member.guild.fetchAuditLogs({
         limit: 1,
