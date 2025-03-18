@@ -69,6 +69,9 @@ const client = new Client({
     ],
 });
 
+client.invites = new Collection();
+
+
 client.commands = new Collection();
 
 // Komutları yükle
