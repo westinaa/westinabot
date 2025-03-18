@@ -1,21 +1,45 @@
-const UserStats = require('../models/userStats.js');
+const UserStats = require('../../models/userStats.js');
+const { Events } = require('discord.js');
 
 module.exports = {
-  name: 'voiceStateUpdate',
+  name: Events.VoiceStateUpdate,
   async execute(oldState, newState) {
-    if (!newState.guild) return; // Eğer bir sunucuda değilse, devam etme
+    if (!oldState || !newState) return;
 
-    const userStats = await UserStats.findOne({ userId: newState.id });
+    const userId = newState.member.user.id;
+    let userStats = await UserStats.findOne({ userId });
 
-    if (newState.channel && !oldState.channel) {
-      // Kanalda aktif oldu
-      if (userStats) {
-        userStats.voiceActivity += 1; // Burada aktiflik süresini arttırabilirsin (saniye cinsinden)
-        await userStats.save();
-      }
-    } else if (!newState.channel && oldState.channel) {
-      // Kanaldan ayrıldı
-      // Aktiflik süresi eklenebilir veya başka bir işlem yapılabilir
+    if (!userStats) {
+      userStats = new UserStats({ userId, voiceHours: 0, voiceMinutes: 0 });
     }
-  },
+
+    // Kullanıcı ses kanalına girdiğinde
+    if (!oldState.channelId && newState.channelId) {
+      newState.member.voiceJoinTime = Date.now();
+    } 
+    // Kullanıcı ses kanalından çıktığında
+    else if (oldState.channelId && !newState.channelId) {
+      if (oldState.member.voiceJoinTime) {
+        const elapsedTime = Date.now() - oldState.member.voiceJoinTime;
+        const minutes = Math.floor(elapsedTime / 60000);
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+
+        try {
+          await UserStats.findOneAndUpdate(
+            { userId },
+            {
+              $inc: {
+                voiceHours: hours,
+                voiceMinutes: remainingMinutes
+              }
+            },
+            { upsert: true }
+          );
+        } catch (error) {
+          console.error('Ses istatistiği güncellenirken hata:', error);
+        }
+      }
+    }
+  }
 };
