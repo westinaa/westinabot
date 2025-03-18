@@ -133,7 +133,65 @@ try {
 } catch (error) {
     console.error("DM gönderilemedi: ", error);
   }
+
+ // Tüm sunucuların davetlerini cache'le
+ client.guilds.cache.forEach(async (guild) => {
+    const firstInvites = await guild.invites.fetch();
+    client.invites.set(guild.id, new Collection(firstInvites.map((invite) => [invite.code, invite.uses])));
+  });
+
 });
+
+// Yeni davet oluşturulduğunda
+client.on('inviteCreate', async invite => {
+    const guildInvites = client.invites.get(invite.guild.id);
+    guildInvites.set(invite.code, invite.uses);
+  });
+  
+  // Üye katıldığında
+  client.on('guildMemberAdd', async member => {
+    try {
+      const newInvites = await member.guild.invites.fetch();
+      const oldInvites = client.invites.get(member.guild.id);
+      const invite = newInvites.find(i => i.uses > oldInvites.get(i.code));
+  
+      if (invite) {
+        const inviter = await client.users.fetch(invite.inviter.id);
+        
+        // Davet eden kişinin istatistiklerini güncelle
+        await UserStats.findOneAndUpdate(
+          { userId: inviter.id },
+          { 
+            $inc: { 
+              'invites.total': 1,
+              'invites.real': 1
+            }
+          },
+          { upsert: true }
+        );
+      }
+  
+      // Davet listesini güncelle
+      client.invites.set(member.guild.id, new Collection(newInvites.map((invite) => [invite.code, invite.uses])));
+    } catch (error) {
+      console.error('Davet takip hatası:', error);
+    }
+  });
+  
+  // Üye ayrıldığında
+  client.on('guildMemberRemove', async member => {
+    try {
+      const inviteData = await UserStats.findOne({ userId: member.id });
+      if (inviteData && inviteData.invitedBy) {
+        await UserStats.findOneAndUpdate(
+          { userId: inviteData.invitedBy },
+          { $inc: { 'invites.left': 1 } }
+        );
+      }
+    } catch (error) {
+      console.error('Üye ayrılma hatası:', error);
+    }
+  });
 
 // Ses istatistikleri için
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -153,7 +211,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   
         try {
           await UserStats.findOneAndUpdate(
-            { userId: oldState.member.id },
+            { userId: oldState.member.id }, // userID yerine userId kullanıyoruz
             { 
               $inc: { 
                 voiceHours: hours,
@@ -220,17 +278,11 @@ client.on("messageCreate", async (message) => {
             }
         }
 
-        // Stat güncelleme
+  // Mesaj sayısını güncelle
   try {
     await UserStats.findOneAndUpdate(
-      { guildID: message.guild.id, userID: message.author.id },
-      {
-        $inc: {
-          messageCount: 1,
-          [`messageStats.${message.channel.id}`]: 1
-        },
-        $set: { lastMessageDate: new Date() }
-      },
+      { userId: message.author.id }, // userID yerine userId kullanıyoruz
+      { $inc: { messages: 1 } },
       { upsert: true }
     );
   } catch (error) {
