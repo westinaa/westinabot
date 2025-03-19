@@ -77,7 +77,7 @@ module.exports = {
           iconURL: targetUser.displayAvatarURL(),
         })
         .setDescription(
-          `@${targetUser} üyesinin \`(${moment().format('YYYY-MM-DD')})\` tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
+          `${targetUser} üyesinin \`(${moment().format('YYYY-MM-DD')})\` tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
           
           `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
           `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
