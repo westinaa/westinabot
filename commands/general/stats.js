@@ -2,6 +2,8 @@ const { EmbedBuilder } = require('discord.js');
 const UserStats = require('../../models/userStats.js');
 const moment = require('moment');
 require('moment-duration-format');
+const timestamp = moment().unix(); // Unix timestamp (saniye cinsinden)
+const discordTimestamp = `<t:${timestamp}:R>`;
 
 module.exports = {
   name: 'stat',
@@ -77,7 +79,7 @@ module.exports = {
           iconURL: targetUser.displayAvatarURL(),
         })
         .setDescription(
-          `${targetUser} üyesinin \`(${moment().format('YYYY-MM-DD')})\` tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
+          `${targetUser} üyesinin \`${discordTimestamp}\` tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
           
           `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
           `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
