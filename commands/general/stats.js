@@ -73,34 +73,35 @@ module.exports = {
       const lastWeeklyResetVoice = moment(userStats.lastWeeklyResetVoice);
 
       const embed = new EmbedBuilder()
-        .setColor('#ffffff')
-        .setAuthor({
-          name: `${targetUser.username}`,
-          iconURL: targetUser.displayAvatarURL(),
-        })
-        .setDescription(
-          `${targetUser} üyesinin ${discordTimestamp} tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
-          
-          `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
-          `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
-          `Haftalık Mesaj: \`${weeklyMessages}\`\n` +
-          `Günlük Mesaj: \`${dailyMessages}\`\n\n` +
-          
-          `<:voice:1349504902703091743> __**Ses İstatistikleri**__\n` +
-          `Toplam Ses Süresi: \`${totalVoiceTime}\`\n` +
-          `Haftalık Ses Süresi: \`${weeklyVoiceTime}\`\n` +
-          `Günlük Ses Süresi: \`${dailyVoiceTime}\`\n\n` +
-
-          `<:invite:1350472218500665417> __**Davet İstatistikleri**__\n` +
-          `\`${inviteStats}\``
-        )
-        .setFooter({ 
-          text: message.guild.name, 
-          iconURL: message.guild.iconURL() 
-        })
-        .setTimestamp();
-
-      message.reply({ embeds: [embed] });
+      .setColor('#ffffff')
+      .setAuthor({
+        name: `${targetUser.username}`,
+        iconURL: targetUser.displayAvatarURL(),
+      })
+      .setThumbnail(targetUser.displayAvatarURL()) // Profil fotoğrafını thumbnail olarak ekliyoruz
+      .setDescription(
+        `${targetUser} üyesinin ${discordTimestamp} tarihinden itibaren \`${message.guild.name}\` sunucusunda toplam ses ve mesaj bilgileri aşağıda belirtilmiştir:\n\n` +
+    
+        `<a:mesaj2:1216364533745188954> __**Mesaj İstatistikleri**__\n` +
+        `Toplam Mesaj: \`${userStats.messages || 0}\`\n` +
+        `Haftalık Mesaj: \`${weeklyMessages}\`\n` +
+        `Günlük Mesaj: \`${dailyMessages}\`\n\n` +
+    
+        `<:voice:1349504902703091743> __**Ses İstatistikleri**__\n` +
+        `Toplam Ses Süresi: \`${totalVoiceTime}\`\n` +
+        `Haftalık Ses Süresi: \`${weeklyVoiceTime}\`\n` +
+        `Günlük Ses Süresi: \`${dailyVoiceTime}\`\n\n` +
+    
+        `<:invite:1350472218500665417> __**Davet İstatistikleri**__\n` +
+        `\`${inviteStats}\``
+      )
+      .setFooter({
+        text: message.guild.name,
+        iconURL: message.guild.iconURL()
+      })
+      .setTimestamp();
+    
+    message.reply({ embeds: [embed] });    
     } catch (error) {
       console.error('Stat komutu hatası:', error);
       message.reply('İstatistikler gösterilirken bir hata oluştu.');
