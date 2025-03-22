@@ -1,5 +1,5 @@
 module.exports = {
-    prefix: ".",
+    prefix: "*",
     logChannelName: "mod-log",
     moderatorRoles: ["Moderator", "Admin"],
     maxWarnings: 3,
