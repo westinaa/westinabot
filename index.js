@@ -46,10 +46,10 @@ async function connectToDB() {
 connectToDB().catch(console.error);
 
 app.get("/", (req, res) => {
-    res.send("Bot is running!");
+    res.send("A S T E L I A");
 });
 app.listen(3000, () => {
-    console.log("Web server is online!");
+    console.log("PORT BAĞLANTISI BAŞARILI!");
 });
 
 const client = new Client({
