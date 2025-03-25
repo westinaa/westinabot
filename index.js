@@ -46,7 +46,7 @@ async function connectToDB() {
 connectToDB().catch(console.error);
 
 app.get("/", (req, res) => {
-    res.send("A S T E L I A");
+    res.send("Edepsiz.");
 });
 app.listen(3000, () => {
     console.log("PORT BAĞLANTISI BAŞARILI!");
@@ -114,7 +114,7 @@ client.once("ready", async () => {
 
     // Eski izleme aktivitesini 5 saniye sonra geri yükle
     setTimeout(async () => {
-        await client.user.setActivity("discord.gg/mabet", {
+        await client.user.setActivity("discord.gg/edepsiz", {
             type: ActivityType.Watching, // Etkinlik türünü "Watching" olarak güncelle
         });
     }, 5000);
