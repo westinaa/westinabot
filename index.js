@@ -16,6 +16,7 @@ const UserStats = require('./models/userStats.js')
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const { joinVoiceChannel } = require('@discordjs/voice');
 const userStatsUpdate = require("./scripts/userStatsUpdate.js");
 
 // Veritabanına bağlanma fonksiyonu
@@ -118,6 +119,21 @@ client.once("ready", async () => {
             type: ActivityType.Watching, // Etkinlik türünü "Watching" olarak güncelle
         });
     }, 5000);
+
+       // Ses kanalına bağlanma
+   let botVoiceChannel = client.channels.cache.get("1357154558870163647");
+   try {
+     const connection = joinVoiceChannel({
+       channelId: botVoiceChannel.id, // Ses kanalının ID'si
+       guildId: botVoiceChannel.guild.id, // Sunucunun ID'si
+       adapterCreator: botVoiceChannel.guild.voiceAdapterCreator, // Sesli kanal bağlantısı için adapter
+     });
+
+     console.log('Bot ses kanalına bağlandı!');
+   } catch (err) {
+     console.error("[HATA] Bot ses kanalına bağlanamadı!", err);
+   }
+
 
    // Botun aktif olma zamanı
 const botStartTime = Math.floor(client.readyTimestamp / 1000);  // Unix timestamp'ı saniye cinsinden alıyoruz
