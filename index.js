@@ -115,7 +115,7 @@ client.once("ready", async () => {
 
     // Eski izleme aktivitesini 5 saniye sonra geri yükle
     setTimeout(async () => {
-        await client.user.setActivity("Edepsiz 🤍 Westina", {
+        await client.user.setActivity("@izlerkalirsin", {
             type: ActivityType.Watching, // Etkinlik türünü "Watching" olarak güncelle
         });
     }, 5000);
